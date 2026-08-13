@@ -12,6 +12,7 @@
 // guard at the bottom mirrors `make-superadmin.ts:85-92`.
 
 import { PrismaClient } from '@prisma/client';
+import { pathToFileURL } from 'node:url';
 import bcrypt from 'bcryptjs';
 
 const SEED_USERS = [
@@ -67,7 +68,7 @@ export async function main(_args: string[] = [], deps: SeedDeps = {}): Promise<v
 
 // CLI entrypoint guard — only run when invoked as a script, not when
 // imported by tests.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main()
     .then(() => process.exit(0))
     .catch((err) => {

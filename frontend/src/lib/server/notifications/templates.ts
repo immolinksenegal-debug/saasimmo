@@ -50,3 +50,26 @@ export function paymentReceived(
     dedupeKey: `payment-received:${orderId}`,
   };
 }
+
+/**
+ * Fired when a visitor submits "Demander une visite" on a property detail
+ * page. dedupeKey is keyed on the VisitRequest row id (already unique), not
+ * a timestamp — each submission is a distinct real event, not a retry.
+ */
+export function visitRequested(
+  ownerId: string,
+  visitRequestId: string,
+  propertyId: string,
+  propertyTitle: string,
+  requesterName: string,
+  requesterPhone: string,
+): CreateNotificationInput {
+  return {
+    userId: ownerId,
+    type: 'VISIT_REQUESTED',
+    title: 'Nouvelle demande de visite',
+    body: `${requesterName} (${requesterPhone}) souhaite visiter « ${propertyTitle} ».`,
+    data: { propertyId, visitRequestId, requesterName, requesterPhone },
+    dedupeKey: `visit-requested:${visitRequestId}`,
+  };
+}

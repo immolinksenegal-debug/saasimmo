@@ -30,6 +30,11 @@ import { createWebhookHandler } from '@/lib/server/webhook/handler';
 import { bictorysWebhookProvider } from '@/lib/server/webhook/bictorys';
 import { enqueueOutbox } from '@/lib/server/outbox';
 import { prisma } from '@/lib/server/prisma';
+import {
+  SUBSCRIPTION_PLANS,
+  SUBSCRIPTION_PERIOD_MS,
+  isSubscriptionPlan,
+} from '@/lib/server/subscriptions/plans';
 
 export const POST = createWebhookHandler({
   prisma,
@@ -54,6 +59,31 @@ export const POST = createWebhookHandler({
         ...(paymentMethod !== null ? { paymentMethod } : {}),
       },
     });
+
+    // Pack purchase — activate/renew the seller's Subscription in the same
+    // tx as the Order status flip (no outbox needed here: this is a direct
+    // data mutation, not a dispatched side-effect like email/notification).
+    const meta = (order.metadata ?? {}) as Record<string, unknown>;
+    if (
+      order.userId &&
+      meta.kind === 'pack_subscription' &&
+      typeof meta.plan === 'string' &&
+      isSubscriptionPlan(meta.plan)
+    ) {
+      const catalog = SUBSCRIPTION_PLANS[meta.plan];
+      const renewsAt = new Date(Date.now() + SUBSCRIPTION_PERIOD_MS);
+      await tx.subscription.upsert({
+        where: { userId: order.userId },
+        create: {
+          userId: order.userId,
+          plan: meta.plan,
+          listingQuota: catalog.listingQuota,
+          status: 'ACTIVE',
+          renewsAt,
+        },
+        update: { plan: meta.plan, listingQuota: catalog.listingQuota, status: 'ACTIVE', renewsAt },
+      });
+    }
 
     // Outbox emits stay inside the factory's Serializable tx so the rows
     // commit atomically with the status change. The drain cron picks them up

@@ -42,6 +42,9 @@ model User {
   withdrawals       Withdrawal[]
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
+  properties        Property[]
+  favorites         Favorite[]
+  subscription      Subscription?
 
   // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
   // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
@@ -308,6 +311,126 @@ model Order {
   @@index([userId, createdAt])
   @@index([status, expiresAt])
   @@index([provider, providerChargeId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// ImmoLink Sénégal — real estate listings. Replaces the mock data in
+// frontend/src/lib/mock/immolink.ts (kept there now for presentation-only
+// helpers: price formatting, badge/txn colors, marketing copy).
+//
+// `price` is FCFA (XOF), which has no subunit — 1 = 1 FCFA, same convention
+// as Order.amount. `unit` distinguishes a sale price from a monthly rent.
+// ───────────────────────────────────────────────────────────────────────
+model Property {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title     String
+  type      String // Villa | Appartement | Terrain | Bureau
+  txn       String // Vente | Location
+  city      String
+  quartier  String
+  price     Int // FCFA
+  unit      String   @default("") // "" | "/mois"
+  beds      Int      @default(0)
+  baths     Int      @default(0)
+  surface   Int
+  badge     String   @default("Nouveau") // Premium | Nouveau | Coup de cœur | Opportunité
+  image     String
+  image2    String
+  image3    String
+  photos    Int      @default(1)
+  views     Int      @default(0)
+  favs      Int      @default(0)
+  agent     String
+  agency    String
+  charges   String   @default("Non applicable")
+  status    String   @default("ACTIVE") // ACTIVE | DRAFT | ARCHIVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visitRequests VisitRequest[]
+  viewEvents    PropertyView[]
+  favorites     Favorite[]
+
+  @@index([txn, status])
+  @@index([city])
+  @@index([ownerId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Time-windowed view log backing the dashboard's "Vues (7j)" KPI —
+// `Property.views` stays a fast denormalized all-time counter (incremented
+// alongside each insert here), this table is what makes a real 7-day
+// window (and week-over-week trend) possible.
+// ───────────────────────────────────────────────────────────────────────
+model PropertyView {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId, createdAt])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Real per-user favorites (logged-in only — anonymous visitors keep the
+// client-only localStorage favorites, see src/lib/useFavorites.ts).
+// `Property.favs` stays a fast denormalized counter, incremented/decremented
+// alongside create/delete here so existing card/detail displays stay cheap.
+// ───────────────────────────────────────────────────────────────────────
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([propertyId, createdAt])
+  @@index([userId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Seller subscription — one row per user, activated/renewed by the Bictorys
+// webhook when a `pack_subscription` Order is PAID (see
+// api/webhooks/bictorys/route.ts onPaid + lib/server/subscriptions/plans.ts
+// for the canonical plan→{amount,quota} catalog). Absence of a row (or an
+// expired one) means the free tier (see FREE_LISTING_QUOTA) — read paths
+// treat `renewsAt < now` as lazily-expired rather than running a cron to
+// flip status, so no background job is needed to keep this correct.
+// ───────────────────────────────────────────────────────────────────────
+model Subscription {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan         String // STANDARD | PREMIUM
+  listingQuota Int
+  status       String   @default("ACTIVE") // ACTIVE | CANCELLED
+  renewsAt     DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// "Demander une visite" — a lead-gen form on the property detail page.
+// No auth required to submit (same rationale as /api/auth/signup: this is
+// a public, pre-session action with no ambient authority to protect, so
+// the route skips verifyCsrf). The property owner is notified via the
+// existing Notification system (see notifications/templates.ts).
+// ───────────────────────────────────────────────────────────────────────
+model VisitRequest {
+  id          String    @id @default(cuid())
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String
+  message     String?
+  preferredAt DateTime?
+  status      String    @default("PENDING") // PENDING | CONTACTED | DONE | CANCELLED
+  createdAt   DateTime  @default(now())
+
+  @@index([propertyId, createdAt])
 }
 
 model Withdrawal {

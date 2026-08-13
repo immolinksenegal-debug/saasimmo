@@ -84,11 +84,7 @@ function configureOnce(): void {
  * `publicId` is supplied by the caller (the upload route builds a path-like
  * key, `{userId}/{cuid}`) so we don't depend on Cloudinary's random ID.
  */
-export async function uploadBuffer(
-  publicId: string,
-  body: Buffer,
-  contentType: string,
-): Promise<UploadResult> {
+export async function uploadBuffer(publicId: string, body: Buffer): Promise<UploadResult> {
   configureOnce();
 
   // resource_type 'auto' lets Cloudinary pick image/video/raw from the bytes,
@@ -99,8 +95,15 @@ export async function uploadBuffer(
     resource_type: 'auto',
   };
   if (_preset) options.upload_preset = _preset;
-  // Surface the validated MIME so transformations/CDN behave sensibly.
-  if (contentType) options.metadata = `mime=${contentType}`;
+  // NOTE: intentionally NOT setting `options.metadata` here. Cloudinary's
+  // `metadata` upload param references *structured metadata external IDs*
+  // configured on the Cloudinary account (Settings → Metadata) — it is not
+  // a free-form key/value bag. Passing `mime=<contentType>` without that
+  // field defined account-side makes Cloudinary reject the ENTIRE upload
+  // with "Metadata External IDs do not exist: [mime]", which surfaced here
+  // as an opaque UPLOAD_FAILED/502 for every single upload. The MIME type
+  // is already persisted on `FileUpload.mimeType` — nothing is lost by
+  // dropping this.
 
   const res = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(options, (err, response) => {
