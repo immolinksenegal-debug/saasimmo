@@ -146,6 +146,7 @@ export function Header() {
             type="button"
             onClick={closeMobile}
             aria-label="Fermer le menu"
+            tabIndex={mobileOpen ? 0 : -1}
             className="im-tap mb-3 ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate"
           >
             ✕
@@ -156,6 +157,7 @@ export function Header() {
               openPacks();
               closeMobile();
             }}
+            tabIndex={mobileOpen ? 0 : -1}
             className="im-tap mb-4 cursor-pointer rounded-full bg-brand-green px-5 py-3.5 text-center text-[15px] font-bold text-brand-cream sm:hidden"
           >
             Publier une annonce
@@ -165,6 +167,7 @@ export function Header() {
               key={link.label}
               href={link.href}
               onClick={closeMobile}
+              tabIndex={mobileOpen ? 0 : -1}
               className="im-tap rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red"
             >
               {link.label}
@@ -173,6 +176,7 @@ export function Header() {
           <Link
             href="/dashboard"
             onClick={closeMobile}
+            tabIndex={mobileOpen ? 0 : -1}
             className="im-tap rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red sm:hidden"
           >
             Tableau de bord
@@ -182,6 +186,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={onLogout}
+                tabIndex={mobileOpen ? 0 : -1}
                 className="im-tap flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-3 text-left hover:bg-brand-green/8 hover:text-brand-red"
               >
                 <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linear-to-br from-brand-red to-brand-red-dark text-sm font-bold text-white">
@@ -193,6 +198,7 @@ export function Header() {
               <Link
                 href="/login"
                 onClick={closeMobile}
+                tabIndex={mobileOpen ? 0 : -1}
                 className="im-tap block rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red sm:hidden"
               >
                 Connexion
