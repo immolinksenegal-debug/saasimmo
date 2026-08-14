@@ -55,10 +55,33 @@ a {
   }
 }
 
+/* `forwards` so the element holds its post-animation state instead of
+   snapping back to its pre-animation CSS the instant the animation ends —
+   required for Reveal (components/immolink/Reveal.tsx), which swaps an
+   `opacity-0` class for `animate-im-up` on scroll-into-view. */
 .animate-im-up {
-  animation: im-up 0.3s ease;
+  animation: im-up 0.3s ease forwards;
 }
 
 .animate-im-fade {
-  animation: im-fade 0.35s ease;
+  animation: im-fade 0.35s ease forwards;
+}
+
+/* Tap/press feedback for interactive elements — buttons, cards, links. */
+.im-tap {
+  transition: transform 0.15s ease;
+}
+
+.im-tap:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .im-tap {
+    transition: none;
+  }
+
+  .im-tap:active {
+    transform: none;
+  }
 }
