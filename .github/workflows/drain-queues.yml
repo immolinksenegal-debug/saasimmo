@@ -1,0 +1,26 @@
+name: Drain outbox and email queue
+
+# Vercel's Hobby plan only allows cron jobs to run once a day, which is far
+# too slow for time-sensitive emails (signup verification codes, password
+# resets). This workflow calls the same two cron routes every 5 minutes
+# instead, so queued emails actually go out promptly. The native Vercel
+# crons in frontend/vercel.json stay in place as a daily backstop.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Drain outbox
+        run: |
+          curl -sf -X GET "https://immolinksenegal.net/api/cron/outbox-drain" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Drain email queue
+        run: |
+          curl -sf -X GET "https://immolinksenegal.net/api/cron/email-queue-drain" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
