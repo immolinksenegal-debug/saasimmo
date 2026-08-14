@@ -6,33 +6,22 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SRC = path.join(__dirname, '../public/immolink-emblem.png');
 const APP_DIR = path.join(__dirname, '../src/app');
 
 // #0a5a2e — brand-green, matches the app's rounded-avatar treatment.
 const BRAND_GREEN = { r: 10, g: 90, b: 46, alpha: 1 };
 
 async function build(size, outPath, cornerRadiusRatio) {
+  const trimmed = await sharp(SRC).trim().toBuffer();
+
   const glyphSize = Math.round(size * 0.62);
-
-  // Create a simple green circle glyph (fallback or direct creation)
-  const glyphBuffer = await sharp({
-    create: {
-      width: glyphSize,
-      height: glyphSize,
-      channels: 4,
+  const glyph = await sharp(trimmed)
+    .resize(glyphSize, glyphSize, {
+      fit: 'contain',
       background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite([
-      {
-        input: Buffer.from(
-          `<svg width="${glyphSize}" height="${glyphSize}"><circle cx="${Math.round(glyphSize / 2)}" cy="${Math.round(glyphSize / 2)}" r="${Math.round(glyphSize / 2 - 2)}" fill="#0a5a2e"/></svg>`,
-        ),
-      },
-    ])
-    .png()
+    })
     .toBuffer();
-
   const offset = Math.round((size - glyphSize) / 2);
 
   const layers = [];
@@ -45,7 +34,7 @@ async function build(size, outPath, cornerRadiusRatio) {
       blend: 'dest-in',
     });
   }
-  layers.push({ input: glyphBuffer, left: offset, top: offset });
+  layers.push({ input: glyph, left: offset, top: offset });
 
   await sharp({
     create: { width: size, height: size, channels: 4, background: BRAND_GREEN },
