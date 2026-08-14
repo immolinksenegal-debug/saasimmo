@@ -123,8 +123,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // client-side decoder.
     if (HEIC_MIMES.has(storedMime)) {
       try {
+        // `@types/heic-convert`'s declared `buffer` type has drifted across
+        // versions (ArrayBufferLike vs Uint8Array<ArrayBufferLike>) — a
+        // plain Buffer satisfies the library at runtime either way, so cast
+        // reflectively off the function's own parameter type rather than
+        // hardcoding whichever shape happens to be installed locally.
         const converted = await heicConvert({
-          buffer: buf as unknown as ArrayBufferLike,
+          buffer: buf as unknown as Parameters<typeof heicConvert>[0]['buffer'],
           format: 'JPEG',
           quality: 0.9,
         });
