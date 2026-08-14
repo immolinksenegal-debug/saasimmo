@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,20 @@ export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.style.overflow = 'hidden';
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMobileOpen(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [mobileOpen]);
+
   const initials = user ? user.email.slice(0, 2).toUpperCase() : null;
 
   function closeMobile() {
@@ -77,7 +91,7 @@ export function Header() {
           <button
             type="button"
             onClick={openPacks}
-            className="hidden cursor-pointer rounded-full bg-brand-green px-5 py-2.5 text-sm font-bold text-brand-cream sm:inline-flex"
+            className="im-tap hidden cursor-pointer rounded-full bg-brand-green px-5 py-2.5 text-sm font-bold text-brand-cream sm:inline-flex"
           >
             Publier une annonce
           </button>
@@ -103,22 +117,46 @@ export function Header() {
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={mobileOpen}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate lg:hidden"
+            className="im-tap flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate lg:hidden"
           >
             {mobileOpen ? '✕' : '☰'}
           </button>
         </div>
       </div>
 
-      {mobileOpen && (
-        <nav className="flex flex-col gap-1 border-t border-brand-green/10 bg-brand-cream px-4 py-3 text-[14.5px] font-semibold text-brand-slate lg:hidden">
+      {/* Mobile drawer — backdrop + slide-in panel. Desktop (lg:) is
+          untouched; this whole block only ever renders below the lg
+          breakpoint via the hamburger button above. */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden ${mobileOpen ? '' : 'pointer-events-none'}`}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          onClick={closeMobile}
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 motion-reduce:transition-none ${
+            mobileOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        <div
+          className={`absolute top-0 right-0 flex h-full w-[85vw] max-w-90 flex-col gap-1 overflow-y-auto bg-brand-cream px-5 py-5 text-[15px] font-semibold text-brand-slate shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${
+            mobileOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <button
+            type="button"
+            onClick={closeMobile}
+            aria-label="Fermer le menu"
+            className="im-tap mb-3 ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate"
+          >
+            ✕
+          </button>
           <button
             type="button"
             onClick={() => {
               openPacks();
               closeMobile();
             }}
-            className="mb-1 cursor-pointer rounded-full bg-brand-green px-5 py-3 text-center text-sm font-bold text-brand-cream sm:hidden"
+            className="im-tap mb-4 cursor-pointer rounded-full bg-brand-green px-5 py-3.5 text-center text-[15px] font-bold text-brand-cream sm:hidden"
           >
             Publier une annonce
           </button>
@@ -127,7 +165,7 @@ export function Header() {
               key={link.label}
               href={link.href}
               onClick={closeMobile}
-              className="rounded-lg px-2 py-2.5 hover:bg-brand-green/8 hover:text-brand-red"
+              className="im-tap rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red"
             >
               {link.label}
             </Link>
@@ -135,21 +173,34 @@ export function Header() {
           <Link
             href="/dashboard"
             onClick={closeMobile}
-            className="rounded-lg px-2 py-2.5 hover:bg-brand-green/8 hover:text-brand-red sm:hidden"
+            className="im-tap rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red sm:hidden"
           >
             Tableau de bord
           </Link>
-          {!user && (
-            <Link
-              href="/login"
-              onClick={closeMobile}
-              className="mt-1 rounded-lg border-t border-brand-green/10 px-2 pt-3.5 pb-1 hover:text-brand-red sm:hidden"
-            >
-              Connexion
-            </Link>
-          )}
-        </nav>
-      )}
+          <div className="mt-3 border-t border-brand-green/10 pt-3">
+            {user ? (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="im-tap flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-3 text-left hover:bg-brand-green/8 hover:text-brand-red"
+              >
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-linear-to-br from-brand-red to-brand-red-dark text-sm font-bold text-white">
+                  {initials}
+                </span>
+                Se déconnecter
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={closeMobile}
+                className="im-tap block rounded-lg px-2 py-3 hover:bg-brand-green/8 hover:text-brand-red sm:hidden"
+              >
+                Connexion
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
     </header>
   );
 }
