@@ -46,14 +46,14 @@ export function HomeSearchPanel() {
   }
 
   return (
-    <div className="mt-9.5 max-w-3xl rounded-[22px] bg-brand-cream p-2.5 shadow-[0_30px_60px_-25px_rgba(0,0,0,0.55)]">
-      <div className="flex gap-1.5 px-1.5 pt-1.5 pb-3">
+    <div className="mt-8 max-w-3xl rounded-[22px] bg-brand-cream p-2.5 shadow-[0_30px_60px_-25px_rgba(0,0,0,0.55)] sm:mt-9.5">
+      <div className="im-scroll flex gap-1.5 overflow-x-auto px-1.5 pt-1.5 pb-3">
         {TABS.map((t) => (
           <button
             key={t.label}
             type="button"
             onClick={() => setTab(t.label)}
-            className={`cursor-pointer rounded-full px-5 py-2.5 text-sm font-bold ${
+            className={`flex-none cursor-pointer rounded-full px-4 py-2 text-[13.5px] font-bold whitespace-nowrap sm:px-5 sm:py-2.5 sm:text-sm ${
               tab === t.label ? 'bg-brand-green text-brand-cream' : 'text-brand-slate'
             }`}
           >

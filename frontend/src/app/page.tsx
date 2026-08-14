@@ -20,17 +20,24 @@ export default async function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-brand-green text-brand-cream">
         <div className="absolute inset-0 bg-[radial-gradient(1200px_500px_at_80%_-10%,rgba(200,30,30,.35),transparent_60%),radial-gradient(900px_600px_at_-10%_120%,rgba(242,194,0,.22),transparent_55%)]" />
-        <div className="relative mx-auto max-w-6xl px-4 pt-19 pb-23 sm:px-8">
+        <div className="relative mx-auto max-w-6xl px-4 pt-13 pb-16 sm:px-8 sm:pt-19 sm:pb-23">
           <div className="max-w-xl">
-            <div className="mb-5.5 inline-flex items-center gap-2 rounded-full border border-brand-cream/20 bg-brand-cream/12 px-3.5 py-1.5 text-[13px] font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-red" />
-              Connecter · Investir · Réaliser — L&apos;immobilier du Sénégal réuni
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-cream/20 bg-brand-cream/12 py-1.5 pr-3.5 pl-3 text-[12.5px] font-semibold sm:mb-5.5 sm:text-[13px]">
+              <span className="relative flex h-1.5 w-1.5 flex-none">
+                <span className="motion-safe:absolute motion-safe:inline-flex motion-safe:h-full motion-safe:w-full motion-safe:animate-ping motion-safe:rounded-full motion-safe:bg-brand-gold motion-safe:opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-gold" />
+              </span>
+              <span className="sm:hidden">Connecter · Investir · Réaliser</span>
+              <span className="hidden sm:inline">
+                Connecter · Investir · Réaliser — L&apos;immobilier du Sénégal réuni
+              </span>
             </div>
-            <h1 className="mb-4.5 font-serif text-5xl leading-[1.02] font-normal tracking-tight sm:text-6xl">
-              Trouvez le bien qui vous ressemble,{' '}
+            <h1 className="mb-4 font-serif text-[2.75rem] leading-[1.08] font-normal tracking-tight sm:mb-4.5 sm:text-6xl sm:leading-[1.02]">
+              Trouvez le bien qui vous ressemble,
+              <br className="sm:hidden" />{' '}
               <span className="text-brand-gold italic">où que vous soyez.</span>
             </h1>
-            <p className="max-w-lg text-lg leading-relaxed text-brand-cream/82">
+            <p className="max-w-lg text-base leading-relaxed text-brand-cream/82 sm:text-lg">
               Acheter, louer, vendre ou investir — particuliers, agences et promoteurs réunis sur
               une seule plateforme premium.
             </p>

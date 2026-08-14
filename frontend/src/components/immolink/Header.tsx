@@ -77,7 +77,7 @@ export function Header() {
           <button
             type="button"
             onClick={openPacks}
-            className="cursor-pointer rounded-full bg-brand-green px-5 py-2.5 text-sm font-bold text-brand-cream"
+            className="hidden cursor-pointer rounded-full bg-brand-green px-5 py-2.5 text-sm font-bold text-brand-cream sm:inline-flex"
           >
             Publier une annonce
           </button>
@@ -93,7 +93,7 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="text-[14.5px] font-semibold text-brand-slate hover:text-brand-red"
+              className="hidden text-[14.5px] font-semibold text-brand-slate hover:text-brand-red sm:inline"
             >
               Connexion
             </Link>
@@ -112,6 +112,16 @@ export function Header() {
 
       {mobileOpen && (
         <nav className="flex flex-col gap-1 border-t border-brand-green/10 bg-brand-cream px-4 py-3 text-[14.5px] font-semibold text-brand-slate lg:hidden">
+          <button
+            type="button"
+            onClick={() => {
+              openPacks();
+              closeMobile();
+            }}
+            className="mb-1 cursor-pointer rounded-full bg-brand-green px-5 py-3 text-center text-sm font-bold text-brand-cream sm:hidden"
+          >
+            Publier une annonce
+          </button>
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
@@ -129,6 +139,15 @@ export function Header() {
           >
             Tableau de bord
           </Link>
+          {!user && (
+            <Link
+              href="/login"
+              onClick={closeMobile}
+              className="mt-1 rounded-lg border-t border-brand-green/10 px-2 pt-3.5 pb-1 hover:text-brand-red sm:hidden"
+            >
+              Connexion
+            </Link>
+          )}
         </nav>
       )}
     </header>
