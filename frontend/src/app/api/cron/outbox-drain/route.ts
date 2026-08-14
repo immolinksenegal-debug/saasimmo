@@ -90,3 +90,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   });
 }
+
+// Vercel Cron Jobs invoke the scheduled path with GET, not POST.
+export const GET = POST;
