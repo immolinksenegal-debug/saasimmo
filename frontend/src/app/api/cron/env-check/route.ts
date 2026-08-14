@@ -1,6 +1,6 @@
 // TEMPORARY diagnostic route — reports which env vars are visible at runtime
 // without exposing their values. Remove once the Vercel env-var propagation
-// issue is resolved.
+// issue is resolved. (recheck)
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
