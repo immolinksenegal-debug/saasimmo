@@ -53,7 +53,7 @@ export function HomeSearchPanel() {
             key={t.label}
             type="button"
             onClick={() => setTab(t.label)}
-            className={`flex-none cursor-pointer rounded-full px-4 py-2 text-[13.5px] font-bold whitespace-nowrap sm:px-5 sm:py-2.5 sm:text-sm ${
+            className={`im-tap flex-none cursor-pointer rounded-full px-4 py-2 text-[13.5px] font-bold whitespace-nowrap sm:px-5 sm:py-2.5 sm:text-sm ${
               tab === t.label ? 'bg-brand-green text-brand-cream' : 'text-brand-slate'
             }`}
           >
@@ -122,7 +122,7 @@ export function HomeSearchPanel() {
         <button
           type="button"
           onClick={onSearch}
-          className="cursor-pointer bg-brand-red px-7.5 py-4 text-[15px] font-bold text-white"
+          className="im-tap cursor-pointer bg-brand-red px-7.5 py-4 text-[15px] font-bold text-white"
         >
           Rechercher
         </button>

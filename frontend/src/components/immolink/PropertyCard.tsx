@@ -62,7 +62,7 @@ export function PropertyCard({
             toggleFavorite(p.id);
           }}
           aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-[17px]"
+          className="im-tap absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-[17px]"
         >
           {fav ? '❤' : '♡'}
         </button>
