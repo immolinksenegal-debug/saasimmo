@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError, storeCsrfToken } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +13,8 @@ function VerifyEmailForm() {
   const [code, setCode] = useState(params.get('code') ?? '');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     const qEmail = params.get('email');
@@ -45,6 +46,23 @@ function VerifyEmailForm() {
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     void verify(email, code);
+  }
+
+  async function onResend() {
+    setResending(true);
+    setError(null);
+    setResent(false);
+    try {
+      await api('/api/auth/resend-verification', {
+        method: 'POST',
+        body: { email },
+      });
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Erreur inconnue');
+    } finally {
+      setResending(false);
+    }
   }
 
   return (
@@ -96,10 +114,19 @@ function VerifyEmailForm() {
       </form>
       <p className="text-sm text-brand-muted2">
         Pas reçu de code ?{' '}
-        <Link href="/signup" className="font-semibold text-brand-green underline">
-          Réessaie l&apos;inscription
-        </Link>
-        .
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={!email || resending}
+          className="cursor-pointer font-semibold text-brand-green underline disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {resending ? 'Envoi…' : 'Renvoyer le code'}
+        </button>
+        {resent && (
+          <span className="mt-1 block font-semibold text-brand-green">
+            Si un compte existe pour cet email, un nouveau code vient d&apos;être envoyé.
+          </span>
+        )}
       </p>
     </main>
   );
