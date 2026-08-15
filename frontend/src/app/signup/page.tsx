@@ -37,14 +37,6 @@ export default function SignupPage() {
           Publie tes annonces et gère ton espace vendeur.
         </p>
       </div>
-      <div className="rounded-xl border border-brand-red/25 bg-[#FBF3D2] px-4 py-3 text-[13px] font-medium text-[#6E1010]">
-        L&apos;envoi d&apos;email n&apos;est pas configuré sur cette instance de démo (Resend) — la
-        vérification de compte ne pourra pas se terminer. Utilise plutôt le{' '}
-        <Link href="/login" className="underline">
-          compte de test
-        </Link>{' '}
-        pour explorer l&apos;espace vendeur dès maintenant.
-      </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-sm font-semibold text-brand-slate">
           Email

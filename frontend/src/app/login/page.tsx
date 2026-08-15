@@ -27,6 +27,10 @@ export default function LoginPage() {
       await refresh();
       router.push('/dashboard');
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'EMAIL_NOT_VERIFIED') {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       setError(err instanceof ApiError ? err.message : 'Erreur inconnue');
     } finally {
       setSubmitting(false);
@@ -41,21 +45,6 @@ export default function LoginPage() {
           Accède à ton espace vendeur ImmoLink.
         </p>
       </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          setEmail('user@example.com');
-          setPassword('UserPassword123!');
-        }}
-        className="cursor-pointer rounded-xl border border-brand-green/20 bg-brand-green/5 px-4 py-3 text-left text-[13px] font-medium text-brand-muted2"
-      >
-        🧪 <b className="text-brand-ink">Compte de test</b> — user@example.com / UserPassword123!
-        <br />
-        Clique pour préremplir le formulaire (les emails ne sont pas envoyés en démo — Resend
-        n&apos;est pas configuré, donc l&apos;inscription self-service ne peut pas encore vérifier
-        un nouvel email).
-      </button>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-sm font-semibold text-brand-slate">
