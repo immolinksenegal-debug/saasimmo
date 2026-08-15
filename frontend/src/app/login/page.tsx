@@ -59,7 +59,15 @@ export default function LoginPage() {
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm font-semibold text-brand-slate">
-          Mot de passe
+          <span className="flex items-center justify-between">
+            Mot de passe
+            <Link
+              href="/forgot-password"
+              className="im-tap text-xs font-semibold text-brand-green underline"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </span>
           <input
             type="password"
             required
