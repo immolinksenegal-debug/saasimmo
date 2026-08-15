@@ -4,6 +4,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 // Deploy trigger: forces a real diff so Vercel's monorepo change-detection
 // doesn't skip the build as "unaffected" (empty commits get CANCELED, not
 // built — env var changes alone need a genuine file diff to take effect).
+// Bumped again to pick up the corrected CLOUDINARY_* credentials.
 
 // Static security headers applied to every response.
 // Set via next.config.ts (not middleware.ts) so Vercel's edge can serve them
