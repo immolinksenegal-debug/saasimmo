@@ -5,6 +5,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 // doesn't skip the build as "unaffected" (empty commits get CANCELED, not
 // built — env var changes alone need a genuine file diff to take effect).
 // Bumped again to pick up the corrected CLOUDINARY_* credentials.
+// Bumped again to pick up the new RESEND_API_KEY / EMAIL_FROM (linksenimmo project).
 
 // Static security headers applied to every response.
 // Set via next.config.ts (not middleware.ts) so Vercel's edge can serve them
