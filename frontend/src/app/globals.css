@@ -84,4 +84,9 @@ a {
   .im-tap:active {
     transform: none;
   }
+
+  .animate-im-up,
+  .animate-im-fade {
+    animation: none;
+  }
 }
