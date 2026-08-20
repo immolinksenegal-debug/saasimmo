@@ -1,4 +1,5 @@
 // GET /api/auth/me — AUTH-06.
+// PATCH /api/auth/me — update self-service profile fields (currently: phone).
 //
 // Source: RESEARCH.md Pattern 14.
 //
@@ -8,20 +9,25 @@
 // or a 401 NextResponse on failure.
 //
 // Extra fields beyond { sub, email } (id, emailVerifiedAt, createdAt,
-// updatedAt, hasPassword, linkedProviders) are fetched via a second DB hit
-// so the AuthContext / settings page can branch on them without an extra
-// round-trip. `hasPassword` distinguishes OAuth-only accounts (passwordHash
-// is null) — used by /settings to switch between "Set password" and
-// "Change password". `linkedProviders` is a string[] of provider names
-// already wired (e.g. ['google']).
+// updatedAt, hasPassword, linkedProviders, phone) are fetched via a second
+// DB hit so the AuthContext / settings page can branch on them without an
+// extra round-trip. `hasPassword` distinguishes OAuth-only accounts
+// (passwordHash is null) — used by /settings to switch between "Set
+// password" and "Change password". `linkedProviders` is a string[] of
+// provider names already wired (e.g. ['google']). `phone` (E.164, optional)
+// is shown publicly on that user's Property listings — see
+// biens/[id]/page.tsx — so visitors can contact the owner directly.
 //
-// No CSRF: GET is a safe method; verifyCsrf is a no-op for GET anyway.
+// No CSRF on GET: it's a safe method; verifyCsrf is a no-op for GET anyway.
 export const runtime = 'nodejs';
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
+import { z } from 'zod';
+import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+import { zPhone } from '@/lib/server/zod-helpers';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -45,6 +51,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
+        phone: true,
         oauthAccounts: { select: { provider: true } },
       },
     });
@@ -55,6 +62,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       sub: auth.user.sub,
       id: dbUser?.id ?? auth.user.sub,
       email: dbUser?.email ?? auth.user.email,
+      phone: dbUser?.phone ?? null,
       emailVerifiedAt: dbUser?.emailVerifiedAt
         ? dbUser.emailVerifiedAt instanceof Date
           ? dbUser.emailVerifiedAt.toISOString()
@@ -75,5 +83,54 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     };
 
     return NextResponse.json({ user }, { status: 200, headers: { 'x-request-id': ctx.requestId } });
+  });
+}
+
+const PatchBody = z.object({
+  // Empty string clears the phone (owner opts back out of showing it).
+  phone: z.union([zPhone, z.literal('')]).optional(),
+});
+
+export async function PATCH(req: NextRequest): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const csrfFail = verifyCsrf(req);
+    if (csrfFail) return csrfFail;
+
+    const auth = await requireAuth(req.headers.get('authorization'));
+    if (auth instanceof NextResponse) {
+      auth.headers.set('x-request-id', ctx.requestId);
+      return auth;
+    }
+
+    const parsed = PatchBody.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'VALIDATION_FAILED',
+          message: 'Invalid request body',
+          issues: parsed.error.issues,
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    if (parsed.data.phone === undefined) {
+      return NextResponse.json(
+        { ok: true },
+        { status: 200, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: auth.user.sub },
+      data: { phone: parsed.data.phone === '' ? null : parsed.data.phone },
+      select: { phone: true },
+    });
+
+    return NextResponse.json(
+      { ok: true, phone: updated.phone },
+      { status: 200, headers: { 'x-request-id': ctx.requestId } },
+    );
   });
 }

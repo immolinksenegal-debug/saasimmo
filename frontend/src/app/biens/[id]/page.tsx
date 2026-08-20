@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MortgageCalculator } from '@/components/immolink/MortgageCalculator';
 import { VisitRequestCard } from '@/components/immolink/VisitRequestCard';
+import { OwnerContactCard } from '@/components/immolink/OwnerContactCard';
 import {
   priceFmt,
   txnTextClass,
@@ -11,13 +12,13 @@ import {
   propertyDescription,
   propertyAmenities,
 } from '@/lib/mock/immolink';
-import { getPropertyById, recordPropertyView } from '@/lib/server/properties';
+import { getPropertyWithOwnerById, recordPropertyView } from '@/lib/server/properties';
 
 export const runtime = 'nodejs';
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const property = await getPropertyById(id);
+  const property = await getPropertyWithOwnerById(id);
   if (!property) notFound();
   await recordPropertyView(property.id);
 
@@ -126,6 +127,11 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
             agency={property.agency}
             views={property.views + 1}
             favs={property.favs}
+          />
+          <OwnerContactCard
+            ownerPhone={property.owner.phone}
+            ownerEmail={property.owner.email}
+            propertyTitle={property.title}
           />
           <div className="mt-3.5 rounded-2xl border border-brand-red/25 bg-[#FBF3D2] px-4.5 py-4 text-[13px] leading-relaxed font-semibold text-[#6E1010]">
             🛡️ Annonce vérifiée par ImmoLink. Ne versez jamais d&apos;argent avant la visite.

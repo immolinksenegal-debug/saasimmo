@@ -100,6 +100,28 @@ export async function getPropertyById(id: string): Promise<Property | null> {
   return prisma.property.findFirst({ where: { id, status: 'ACTIVE' } });
 }
 
+export interface OwnerContact {
+  email: string;
+  /** E.164, or null if the owner hasn't set one in Settings. */
+  phone: string | null;
+}
+
+/**
+ * Same lookup as `getPropertyById`, plus the owner's contact info — shown
+ * publicly on `/biens/[id]` so visitors can reach the owner directly
+ * (call/WhatsApp/email). Kept separate from `getPropertyById` (used by the
+ * public JSON API) so `GET /api/properties/[id]` doesn't leak owner PII to
+ * scrapers hitting the API directly.
+ */
+export async function getPropertyWithOwnerById(
+  id: string,
+): Promise<(Property & { owner: OwnerContact }) | null> {
+  return prisma.property.findFirst({
+    where: { id, status: 'ACTIVE' },
+    include: { owner: { select: { email: true, phone: true } } },
+  });
+}
+
 export interface InvestmentStats {
   rentalCount: number;
   opportunityCount: number;

@@ -23,6 +23,11 @@ model User {
   name              String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
   avatarUrl         String?
+  // Optional contact phone number. Set by the user via /api/auth/me PATCH
+  // (Settings page). Shown publicly on that user's Property listings so
+  // visitors can contact the owner directly (call/WhatsApp) — see
+  // biens/[id]/page.tsx.
+  phone             String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).

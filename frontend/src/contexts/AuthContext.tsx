@@ -16,6 +16,8 @@ export interface User {
   hasPassword: boolean;
   /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */
   linkedProviders: string[];
+  /** E.164 contact phone, shown publicly on this user's listings. Null if not set. */
+  phone: string | null;
 }
 
 interface AuthContextValue {

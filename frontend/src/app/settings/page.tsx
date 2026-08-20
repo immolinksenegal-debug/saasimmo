@@ -16,7 +16,7 @@
 //        guard refusing to leave the user without any sign-in method).
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, useUser } from '@/contexts/AuthContext';
@@ -33,6 +33,16 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Contact phone — shown publicly on this user's listings so visitors can
+  // reach them directly (call/WhatsApp).
+  const [phone, setPhone] = useState('');
+  const [phoneSubmitting, setPhoneSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) setPhone(user.phone ?? '');
+  }, [user]);
 
   if (!user) {
     return (
@@ -97,12 +107,71 @@ export default function SettingsPage() {
     }
   }
 
+  async function onSubmitPhone(e: FormEvent) {
+    e.preventDefault();
+    setPhoneError(null);
+    setPhoneSubmitting(true);
+    try {
+      await api('/api/auth/me', { method: 'PATCH', body: { phone: phone.trim() } });
+      toast(
+        phone.trim() ? 'Numéro de contact enregistré.' : 'Numéro de contact retiré.',
+        'success',
+      );
+      await refresh();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setPhoneError(
+          err.code === 'VALIDATION_FAILED'
+            ? 'Format invalide — utilise le format international, ex. +221771234567.'
+            : err.message,
+        );
+      } else {
+        setPhoneError('Erreur réseau. Réessaie.');
+      }
+    } finally {
+      setPhoneSubmitting(false);
+    }
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 px-4 py-12">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Paramètres</h1>
         <p className="text-sm text-gray-600">Connecté en tant que {user.email}</p>
       </header>
+
+      {/* ── Contact phone section ───────────────────────────────────── */}
+      <section className="flex flex-col gap-3 rounded-lg border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold">Numéro de contact</h2>
+        <p className="text-sm text-gray-600">
+          Affiché publiquement sur tes annonces pour que les visiteurs puissent te contacter
+          directement (appel, WhatsApp). Laisse vide pour ne pas l&apos;afficher.
+        </p>
+        <form onSubmit={onSubmitPhone} className="mt-2 flex flex-col gap-4">
+          <label className="flex flex-col gap-1 text-sm">
+            Téléphone
+            <input
+              type="tel"
+              placeholder="+221771234567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2"
+            />
+          </label>
+          {phoneError && (
+            <p role="alert" className="text-sm text-red-600">
+              {phoneError}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={phoneSubmitting}
+            className="rounded-md bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          >
+            {phoneSubmitting ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </form>
+      </section>
 
       {/* ── Password section ─────────────────────────────────────────── */}
       <section className="flex flex-col gap-3 rounded-lg border border-gray-200 p-5">

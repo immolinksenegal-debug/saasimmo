@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { OpenPacksButton } from '@/components/immolink/OpenPacksButton';
+import { DeleteListingButton } from '@/components/immolink/DeleteListingButton';
 import { priceFmt, notificationVisual, timeAgo } from '@/lib/mock/immolink';
 import { listPropertiesByOwner, DEMO_SELLER_EMAIL } from '@/lib/server/properties';
 import { getDashboardKpis } from '@/lib/server/dashboard';
@@ -115,26 +116,26 @@ export default async function DashboardPage() {
               {myListings.length} actives
             </span>
           </div>
-          <div className="hidden grid-cols-[2.4fr_1fr_1fr_1fr_1fr] border-b border-brand-green/6 px-6 py-3 text-[11.5px] font-extrabold tracking-wide text-brand-muted uppercase sm:grid">
+          <div className="hidden grid-cols-[2fr_0.8fr_0.7fr_0.8fr_0.7fr_1.3fr] border-b border-brand-green/6 px-6 py-3 text-[11.5px] font-extrabold tracking-wide text-brand-muted uppercase sm:grid">
             <span>Bien</span>
             <span>Statut</span>
             <span>Vues</span>
             <span>Contacts</span>
             <span>Visites</span>
+            <span>Actions</span>
           </div>
           {myListings.map((l) => (
-            <Link
+            <div
               key={l.id}
-              href={`/biens/${l.id}`}
-              className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2.4fr_1fr_1fr_1fr_1fr] sm:items-center sm:gap-0"
+              className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2fr_0.8fr_0.7fr_0.8fr_0.7fr_1.3fr] sm:items-center sm:gap-0"
             >
-              <div className="flex items-center gap-3">
+              <Link href={`/biens/${l.id}`} className="flex items-center gap-3">
                 <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
                 <div>
                   <div className="text-[14.5px] font-bold">{l.title}</div>
                   <div className="text-xs font-semibold text-brand-muted">{l.price}</div>
                 </div>
-              </div>
+              </Link>
               <span>
                 <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
                   {l.status}
@@ -143,7 +144,20 @@ export default async function DashboardPage() {
               <span className="text-sm font-bold">{l.views}</span>
               <span className="text-sm font-bold">{l.contacts}</span>
               <span className="text-sm font-bold">{l.visits}</span>
-            </Link>
+              <span className="flex items-center gap-3">
+                <Link
+                  href={`/annonces/${l.id}/modifier`}
+                  className="im-tap text-[13px] font-bold text-brand-green underline"
+                >
+                  Modifier
+                </Link>
+                <DeleteListingButton
+                  propertyId={l.id}
+                  title={l.title}
+                  className="im-tap cursor-pointer text-[13px] font-bold text-brand-red underline disabled:opacity-50"
+                />
+              </span>
+            </div>
           ))}
         </div>
 
