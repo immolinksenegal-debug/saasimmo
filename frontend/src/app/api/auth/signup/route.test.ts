@@ -7,10 +7,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { NextRequest } from 'next/server';
 
-// Outbox + dummy-bcrypt mocks installed at module level so they hoist above
-// the route's imports.
-vi.mock('@/lib/server/outbox', () => ({
-  enqueueOutbox: vi.fn().mockResolvedValue({ id: 'outbox-1' }),
+// Email queue + dummy-bcrypt mocks installed at module level so they hoist
+// above the route's imports.
+const mockEnqueue = vi.fn().mockResolvedValue('job-1');
+const mockDrainOne = vi.fn().mockResolvedValue(true);
+vi.mock('@/lib/server/queues/email-queue-singleton', () => ({
+  getEmailQueue: vi.fn(() => ({ enqueue: mockEnqueue, drainOne: mockDrainOne })),
 }));
 vi.mock('@/lib/server/auth/dummy-bcrypt', () => ({
   dummyBcryptCompare: vi.fn().mockResolvedValue(undefined),
@@ -22,7 +24,6 @@ vi.mock('@/lib/server/auth/hibp', () => ({
 import { POST } from './route';
 import { dummyBcryptCompare } from '@/lib/server/auth/dummy-bcrypt';
 import { isPwned } from '@/lib/server/auth/hibp';
-import { enqueueOutbox } from '@/lib/server/outbox';
 
 function makeReq(body: unknown): NextRequest {
   // Build init inline so optional fields (body) aren't typed as `T | undefined`,
@@ -67,10 +68,10 @@ describe('POST /api/auth/signup', () => {
     const codeArg = prismaMock.verificationCode.create.mock.calls[0]?.[0];
     expect(codeArg?.data?.type).toBe('EMAIL_VERIFY');
 
-    expect(enqueueOutbox).toHaveBeenCalledTimes(1);
-    const outboxArg = (enqueueOutbox as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
-    expect(outboxArg?.kind).toBe('email.verification_code');
-    expect(outboxArg?.payload?.to).toBe('new@example.com');
+    expect(mockEnqueue).toHaveBeenCalledTimes(1);
+    const enqueueArg = mockEnqueue.mock.calls[0]?.[0];
+    expect(enqueueArg?.to).toBe('new@example.com');
+    expect(mockDrainOne).toHaveBeenCalledTimes(1);
   });
 
   it('returns identical 201 + dummy-bcrypts on existing email (enumeration-resist)', async () => {
@@ -86,7 +87,7 @@ describe('POST /api/auth/signup', () => {
     expect(dummyBcryptCompare).toHaveBeenCalledTimes(1);
     expect(prismaMock.user.create).not.toHaveBeenCalled();
     expect(prismaMock.verificationCode.create).not.toHaveBeenCalled();
-    expect(enqueueOutbox).not.toHaveBeenCalled();
+    expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
   it('rejects banned passwords with PASSWORD_BANNED before user lookup', async () => {

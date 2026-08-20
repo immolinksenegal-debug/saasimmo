@@ -6,8 +6,10 @@ import { NextRequest } from 'next/server';
 // CR-01 — keep timing-floor short during tests so each call doesn't pad ~350ms.
 process.env.AUTH_FORGOT_TARGET_LATENCY_MS = '0';
 
-vi.mock('@/lib/server/outbox', () => ({
-  enqueueOutbox: vi.fn().mockResolvedValue({ id: 'outbox-1' }),
+const mockEnqueue = vi.fn().mockResolvedValue('job-1');
+const mockDrainOne = vi.fn().mockResolvedValue(true);
+vi.mock('@/lib/server/queues/email-queue-singleton', () => ({
+  getEmailQueue: vi.fn(() => ({ enqueue: mockEnqueue, drainOne: mockDrainOne })),
 }));
 vi.mock('@/lib/server/auth/dummy-bcrypt', () => ({
   dummyBcryptCompare: vi.fn().mockResolvedValue(undefined),
@@ -15,7 +17,6 @@ vi.mock('@/lib/server/auth/dummy-bcrypt', () => ({
 
 import { POST } from './route';
 import { dummyBcryptCompare } from '@/lib/server/auth/dummy-bcrypt';
-import { enqueueOutbox } from '@/lib/server/outbox';
 
 function makeReq(body: unknown): NextRequest {
   return body === undefined
@@ -58,10 +59,10 @@ describe('POST /api/auth/forgot-password', () => {
     expect(codeArg?.data?.type).toBe('PASSWORD_RESET');
     expect(codeArg?.data?.userId).toBe('u1');
 
-    expect(enqueueOutbox).toHaveBeenCalledTimes(1);
-    const outboxArg = (enqueueOutbox as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[1];
-    expect(outboxArg?.kind).toBe('email.password_reset');
-    expect(outboxArg?.payload?.to).toBe('a@b.com');
+    expect(mockEnqueue).toHaveBeenCalledTimes(1);
+    const enqueueArg = mockEnqueue.mock.calls[0]?.[0];
+    expect(enqueueArg?.to).toBe('a@b.com');
+    expect(mockDrainOne).toHaveBeenCalledTimes(1);
   });
 
   it('returns identical 200 + dummy-bcrypts when the user does NOT exist (D-23)', async () => {
@@ -74,7 +75,7 @@ describe('POST /api/auth/forgot-password', () => {
 
     expect(dummyBcryptCompare).toHaveBeenCalledTimes(1);
     expect(prismaMock.verificationCode.create).not.toHaveBeenCalled();
-    expect(enqueueOutbox).not.toHaveBeenCalled();
+    expect(mockEnqueue).not.toHaveBeenCalled();
   });
 
   it('returns 429 TOO_MANY_FORGOT_ATTEMPTS after exceeding 3/h', async () => {

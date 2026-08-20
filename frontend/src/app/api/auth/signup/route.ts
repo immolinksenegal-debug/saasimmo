@@ -23,7 +23,8 @@ import { hashPassword, generateVerificationCode } from '@/lib/server/auth';
 import { isBanned } from '@/lib/server/auth/banned-passwords';
 import { isPwned } from '@/lib/server/auth/hibp';
 import { dummyBcryptCompare } from '@/lib/server/auth/dummy-bcrypt';
-import { enqueueOutbox } from '@/lib/server/outbox';
+import { verificationEmail } from '@/lib/server/auth/email-templates';
+import { getEmailQueue } from '@/lib/server/queues/email-queue-singleton';
 
 const PASSWORD_MIN = Number(process.env.AUTH_PASSWORD_MIN_LENGTH ?? 10);
 const VERIFICATION_TTL_MS = Number(process.env.AUTH_VERIFICATION_TTL_MIN ?? 15) * 60 * 1000;
@@ -131,15 +132,20 @@ export async function POST(req: NextRequest): Promise<Response> {
           expiresAt,
         },
       });
-      await enqueueOutbox(tx, {
-        kind: 'email.verification_code',
-        payload: {
-          to: email,
-          code,
-          expiresAt: expiresAt.toISOString(),
-        },
-      });
     });
+
+    // Send immediately rather than via the outbox+cron pipeline — on Vercel
+    // Hobby, cron jobs run at most once/day, which would leave a signing-up
+    // user waiting up to 24h for their code. getEmailQueue() still records an
+    // EmailJob row for audit/retry; drainOne() sends it in this request.
+    const queue = getEmailQueue();
+    if (queue) {
+      const tpl = verificationEmail({ code, email, expiresAt: expiresAt.toISOString() });
+      await queue.enqueue({ to: email, subject: tpl.subject, html: tpl.html });
+      await queue.drainOne();
+    } else {
+      log.warn('signup: email queue not configured — verification code not sent');
+    }
 
     log.info('signup new user');
     const res = NextResponse.json({ ok: true }, { status: 201 });
