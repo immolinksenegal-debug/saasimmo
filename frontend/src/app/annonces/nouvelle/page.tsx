@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
@@ -26,9 +26,14 @@ export default function NewListingPage() {
   const [baths, setBaths] = useState('0');
   const [surface, setSurface] = useState('');
   const [charges, setCharges] = useState('');
+  const [phone, setPhone] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) setPhone(user.phone ?? '');
+  }, [user]);
 
   function onPickPhotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []).slice(0, MAX_PHOTOS);
@@ -40,6 +45,10 @@ export default function NewListingPage() {
     setError(null);
     setSubmitting(true);
     try {
+      if (user && phone.trim() !== (user.phone ?? '')) {
+        await api('/api/auth/me', { method: 'PATCH', body: { phone: phone.trim() } });
+      }
+
       let images: string[] = [];
       if (user && photos.length > 0) {
         const uploaded = await Promise.all(photos.map((f) => uploadFile(f)));
@@ -208,6 +217,23 @@ export default function NewListingPage() {
             className="rounded-xl border border-brand-green/15 bg-white px-4 py-3 text-[15px] font-medium text-brand-ink outline-none focus:border-brand-green"
           />
         </label>
+
+        {user && (
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-brand-slate">
+            Téléphone de contact
+            <input
+              type="tel"
+              placeholder="+221771234567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="rounded-xl border border-brand-green/15 bg-white px-4 py-3 text-[15px] font-medium text-brand-ink outline-none focus:border-brand-green"
+            />
+            <span className="text-xs font-medium text-brand-muted">
+              Affiché aux visiteurs sur cette annonce (et toutes tes autres annonces). Laisse vide
+              pour ne pas l&apos;afficher.
+            </span>
+          </label>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold text-brand-slate">Photos ({MAX_PHOTOS} max)</span>

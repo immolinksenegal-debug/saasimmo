@@ -22,7 +22,7 @@ export default async function DashboardPage() {
     ownerId = demoSeller?.id;
   }
   const rows = ownerId ? await listPropertiesByOwner(ownerId) : [];
-  const [notifications, kpis, subscription] = ownerId
+  const [notifications, kpis, subscription, ownerUser] = ownerId
     ? await Promise.all([
         prisma.notification.findMany({
           where: { userId: ownerId },
@@ -31,8 +31,11 @@ export default async function DashboardPage() {
         }),
         getDashboardKpis(prisma, ownerId),
         prisma.subscription.findUnique({ where: { userId: ownerId } }),
+        prisma.user.findUnique({ where: { id: ownerId }, select: { name: true, email: true } }),
       ])
-    : [[], [], null];
+    : [[], [], null, null];
+
+  const displayName = ownerUser?.name?.trim() || ownerUser?.email?.split('@')[0] || 'vendeur';
 
   const top4 = rows.slice(0, 4);
   const top4Ids = top4.map((p) => p.id);
@@ -74,7 +77,9 @@ export default async function DashboardPage() {
           <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-red uppercase">
             Espace vendeur
           </div>
-          <h1 className="font-serif text-3xl leading-none sm:text-[38px]">Bonjour, Aïcha 👋</h1>
+          <h1 className="font-serif text-3xl leading-none sm:text-[38px]">
+            Bonjour, {displayName} 👋
+          </h1>
           <p className="mt-1.5 text-[15px] text-brand-muted2">
             Voici la performance de vos annonces cette semaine.
           </p>

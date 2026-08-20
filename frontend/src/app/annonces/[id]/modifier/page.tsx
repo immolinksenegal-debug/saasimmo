@@ -47,9 +47,14 @@ export default function EditListingPage() {
   const [baths, setBaths] = useState('0');
   const [surface, setSurface] = useState('');
   const [charges, setCharges] = useState('');
+  const [phone, setPhone] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) setPhone(user.phone ?? '');
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -100,6 +105,10 @@ export default function EditListingPage() {
     setError(null);
     setSubmitting(true);
     try {
+      if (user && phone.trim() !== (user.phone ?? '')) {
+        await api('/api/auth/me', { method: 'PATCH', body: { phone: phone.trim() } });
+      }
+
       let images: string[] = [];
       if (photos.length > 0) {
         const uploaded = await Promise.all(photos.map((f) => uploadFile(f)));
@@ -299,6 +308,20 @@ export default function EditListingPage() {
             placeholder="75 000 FCFA/mois"
             className="rounded-xl border border-brand-green/15 bg-white px-4 py-3 text-[15px] font-medium text-brand-ink outline-none focus:border-brand-green"
           />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-brand-slate">
+          Téléphone de contact
+          <input
+            type="tel"
+            placeholder="+221771234567"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="rounded-xl border border-brand-green/15 bg-white px-4 py-3 text-[15px] font-medium text-brand-ink outline-none focus:border-brand-green"
+          />
+          <span className="text-xs font-medium text-brand-muted">
+            Affiché aux visiteurs sur toutes tes annonces. Laisse vide pour ne pas l&apos;afficher.
+          </span>
         </label>
 
         <div className="flex flex-col gap-1.5">
