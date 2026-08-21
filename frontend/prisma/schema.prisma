@@ -48,6 +48,7 @@ model User {
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
   properties        Property[]
+  propertyRequests  PropertyRequest[]
   favorites         Favorite[]
   subscription      Subscription?
 
@@ -480,4 +481,31 @@ model Withdrawal {
   @@index([userId, requestedAt])
   @@index([status, requestedAt])
   @@index([provider, providerPayoutId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// "Demande de recherche" — the inverse of Property: a particulier expresses
+// what they're looking for instead of listing a bien they own. Public,
+// free, unlimited (no Subscription quota check — see
+// docs/superpowers/specs/2026-08-21-demandes-recherche-design.md).
+// `budgetMax` is FCFA (XOF), no decimals, same convention as Property.price.
+// ───────────────────────────────────────────────────────────────────────
+model PropertyRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  txn       String // Vente | Location
+  type      String // Villa | Appartement | Terrain | Bureau | Peu importe
+  city      String
+  quartier  String   @default("") // optional — a search can be city-wide
+  budgetMax Int // FCFA, upper bound of the searcher's budget
+  bedsMin   Int      @default(0)
+  message   String   @default("")
+  status    String   @default("ACTIVE") // ACTIVE | FULFILLED | ARCHIVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([txn, status])
+  @@index([city])
+  @@index([userId])
 }
