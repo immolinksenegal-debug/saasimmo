@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { HomeSearchPanel } from '@/components/immolink/HomeSearchPanel';
-import { HeroFloatingCards } from '@/components/immolink/HeroFloatingCards';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { Reveal } from '@/components/immolink/Reveal';
 import { HERO_STATS, PROGRAMS, PACKS, TESTIMONIALS } from '@/lib/mock/immolink';
@@ -23,7 +22,6 @@ export default async function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-brand-green text-brand-cream">
         <div className="absolute inset-0 bg-[radial-gradient(1200px_500px_at_80%_-10%,rgba(200,30,30,.35),transparent_60%),radial-gradient(900px_600px_at_-10%_120%,rgba(242,194,0,.22),transparent_55%)]" />
-        <HeroFloatingCards />
         <div className="relative mx-auto max-w-6xl px-4 pt-13 pb-16 sm:px-8 sm:pt-19 sm:pb-23">
           <div className="max-w-xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-cream/20 bg-brand-cream/12 py-1.5 pr-3.5 pl-3 text-[12.5px] font-semibold sm:mb-5.5 sm:text-[13px]">
