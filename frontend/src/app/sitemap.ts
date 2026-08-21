@@ -8,6 +8,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/`, changeFrequency: 'daily', priority: 1 },
   { url: `${SITE_URL}/recherche`, changeFrequency: 'daily', priority: 0.8 },
   { url: `${SITE_URL}/agences`, changeFrequency: 'weekly', priority: 0.6 },
+  { url: `${SITE_URL}/demandes`, changeFrequency: 'daily', priority: 0.6 },
   { url: `${SITE_URL}/investir`, changeFrequency: 'weekly', priority: 0.6 },
   { url: `${SITE_URL}/projets-neufs`, changeFrequency: 'weekly', priority: 0.6 },
   { url: `${SITE_URL}/mentions-legales`, changeFrequency: 'yearly', priority: 0.2 },

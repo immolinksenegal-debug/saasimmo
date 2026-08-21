@@ -77,6 +77,14 @@ describe('POST /api/property-requests', () => {
     expect(json.error).toBe('VALIDATION_FAILED');
   });
 
+  it('budgetMax above the FCFA ceiling returns 400 instead of a raw DB error', async () => {
+    const res = await POST(makePost({ ...validBody, budgetMax: 3_000_000_000 }));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toBe('VALIDATION_FAILED');
+    expect(prismaMock.propertyRequest.create).not.toHaveBeenCalled();
+  });
+
   it('valid body creates a request scoped to the authenticated user', async () => {
     prismaMock.propertyRequest.create.mockResolvedValue({ id: 'pr-1' } as never);
 
@@ -109,6 +117,15 @@ describe('GET /api/property-requests', () => {
     const json = await res.json();
     expect(json.items).toHaveLength(1);
     expect(typeof json.items[0].createdAt).toBe('string');
+  });
+
+  it('caps the query with a take limit so the public list stays bounded', async () => {
+    prismaMock.propertyRequest.findMany.mockResolvedValue([]);
+    const req = new NextRequest('http://test/api/property-requests');
+    await GET(req);
+    expect(prismaMock.propertyRequest.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 500 }),
+    );
   });
 
   it('ignores an invalid type query param instead of erroring', async () => {

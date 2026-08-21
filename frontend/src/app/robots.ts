@@ -16,6 +16,7 @@ const DISALLOW = [
   '/settings',
   '/annonces/nouvelle',
   '/annonces/*/modifier',
+  '/demandes/nouvelle',
   '/admin/',
   '/auth/error',
 ];

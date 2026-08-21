@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
-import { agentInitials, IMMOLINK_PHONE_E164, IMMOLINK_EMAIL } from '@/lib/mock/immolink';
+import { agentInitials, IMMOLINK_PHONE_E164, IMMOLINK_EMAIL, waMeHref } from '@/lib/mock/immolink';
 
 export function VisitRequestCard({
   propertyId,
@@ -26,9 +26,10 @@ export function VisitRequestCard({
   const [origin, setOrigin] = useState('');
   useEffect(() => setOrigin(window.location.origin), []);
   const propertyUrl = `${origin}/biens/${propertyId}`;
-  const whatsappHref = `https://wa.me/${IMMOLINK_PHONE_E164.replace('+', '')}?text=${encodeURIComponent(
+  const whatsappHref = waMeHref(
+    IMMOLINK_PHONE_E164,
     `Bonjour ImmoLink, je suis intéressé(e) par « ${propertyTitle} » (${propertyUrl}). Pouvez-vous m'en dire plus ?`,
-  )}`;
+  );
   const messageHref = `mailto:${IMMOLINK_EMAIL}?subject=${encodeURIComponent(
     `Question sur : ${propertyTitle}`,
   )}&body=${encodeURIComponent(`Bonjour,\n\nJe souhaite en savoir plus sur ce bien : ${propertyUrl}\n\n`)}`;

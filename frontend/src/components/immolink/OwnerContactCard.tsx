@@ -2,6 +2,8 @@
 // visitor can reach them directly — distinct from `VisitRequestCard`, which
 // routes to ImmoLink's own concierge contact. Owner phone is optional
 // (set in /settings); the card degrades to email-only when absent.
+import { waMeHref } from '@/lib/mock/immolink';
+
 export function OwnerContactCard({
   ownerPhone,
   ownerEmail,
@@ -12,9 +14,7 @@ export function OwnerContactCard({
   propertyTitle: string;
 }) {
   const message = `Bonjour, je suis intéressé(e) par votre annonce « ${propertyTitle} » sur ImmoLink.`;
-  const whatsappHref = ownerPhone
-    ? `https://wa.me/${ownerPhone.replace('+', '')}?text=${encodeURIComponent(message)}`
-    : null;
+  const whatsappHref = ownerPhone ? waMeHref(ownerPhone, message) : null;
   const mailHref = `mailto:${ownerEmail}?subject=${encodeURIComponent(
     `Question sur : ${propertyTitle}`,
   )}&body=${encodeURIComponent(message)}`;

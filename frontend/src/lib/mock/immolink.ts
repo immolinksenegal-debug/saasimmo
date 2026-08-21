@@ -20,6 +20,13 @@ export const IMMOLINK_FACEBOOK_URL = 'https://www.facebook.com/reel/120868721147
 export const IMMOLINK_INSTAGRAM_URL = 'https://www.instagram.com/immolinksenegal';
 export const IMMOLINK_WHATSAPP_URL = `https://wa.me/${IMMOLINK_PHONE_E164.replace('+', '')}`;
 
+// Builds a wa.me deep link with a prefilled message. Strips every non-digit
+// character (not just a leading '+') so a phone stored with spaces/dashes —
+// e.g. "+221 77 123 45 67" — still produces a valid link.
+export function waMeHref(phone: string, text: string): string {
+  return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
+}
+
 export function formatFcfa(n: number): string {
   return Math.round(n)
     .toLocaleString('fr-FR')

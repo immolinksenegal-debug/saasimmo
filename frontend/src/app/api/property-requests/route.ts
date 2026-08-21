@@ -37,7 +37,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       ? (typeParam ?? undefined)
       : undefined;
 
-    const rows = await listPropertyRequests({ txn, city, type });
+    const rows = await listPropertyRequests({ txn, city, type, take: 500 });
 
     return NextResponse.json(
       { items: rows.map(serializePropertyRequest) },
@@ -51,7 +51,7 @@ const Body = z.object({
   type: z.enum(['Villa', 'Appartement', 'Terrain', 'Bureau', 'Peu importe']),
   city: z.string().trim().min(2).max(60),
   quartier: z.string().trim().max(60).optional(),
-  budgetMax: z.number().int().positive(),
+  budgetMax: z.number().int().positive().max(2_000_000_000),
   bedsMin: z.number().int().min(0).max(20).default(0),
   message: z.string().trim().max(500).optional(),
 });

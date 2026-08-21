@@ -1,4 +1,5 @@
-// PATCH /api/property-requests/[id] — owner-only: mark FULFILLED or ARCHIVED.
+// PATCH /api/property-requests/[id] — owner-only: mark FULFILLED, ARCHIVED,
+// or reactivate back to ACTIVE.
 // DELETE /api/property-requests/[id] — owner-only: delete.
 // Both require verifyCsrf + requireAuth, then scope the lookup by
 // `userId: auth.user.sub` and return 404 (not 403) on a mismatch — same
@@ -13,7 +14,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
-const StatusBody = z.object({ status: z.enum(['FULFILLED', 'ARCHIVED']) });
+const StatusBody = z.object({ status: z.enum(['ACTIVE', 'FULFILLED', 'ARCHIVED']) });
 
 export async function PATCH(
   req: NextRequest,

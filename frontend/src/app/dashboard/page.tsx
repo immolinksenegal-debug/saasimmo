@@ -44,8 +44,8 @@ export default async function DashboardPage() {
   const displayName = ownerUser?.name?.trim() || ownerUser?.email?.split('@')[0] || 'vendeur';
   // Gate on the real signed-in user, not the anonymous demo-seller fallback
   // above, so a logged-out visitor never sees the admin entry point.
-  const isAdmin =
-    Boolean(auth?.user.sub) && (ownerUser?.role === 'ADMIN' || ownerUser?.role === 'SUPERADMIN');
+  const isRealUser = Boolean(auth?.user.sub);
+  const isAdmin = isRealUser && (ownerUser?.role === 'ADMIN' || ownerUser?.role === 'SUPERADMIN');
 
   const top4 = rows.slice(0, 4);
   const top4Ids = top4.map((p) => p.id);
@@ -278,14 +278,22 @@ export default async function DashboardPage() {
                   {r.city} · budget max {formatFcfa(r.budgetMax)} FCFA
                 </div>
               </div>
-              <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
+              <span
+                className={`rounded-full px-2.75 py-1 text-xs font-bold ${
+                  r.status === 'ACTIVE'
+                    ? 'bg-brand-green/10 text-brand-green'
+                    : r.status === 'FULFILLED'
+                      ? 'bg-brand-gold/15 text-brand-green-dark'
+                      : 'bg-brand-muted/10 text-brand-muted'
+                }`}
+              >
                 {r.status === 'ACTIVE'
                   ? 'Active'
                   : r.status === 'FULFILLED'
                     ? 'Trouvé'
                     : 'Archivée'}
               </span>
-              <PropertyRequestActions requestId={r.id} status={r.status} />
+              {isRealUser && <PropertyRequestActions requestId={r.id} status={r.status} />}
             </div>
           ))
         )}

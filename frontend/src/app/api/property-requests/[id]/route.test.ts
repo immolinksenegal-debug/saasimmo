@@ -84,6 +84,19 @@ describe('PATCH /api/property-requests/[id]', () => {
       select: { id: true },
     });
   });
+
+  it('owner reactivating to ACTIVE updates the status', async () => {
+    prismaMock.propertyRequest.findFirst.mockResolvedValue({ id: 'pr-1' } as never);
+    prismaMock.propertyRequest.update.mockResolvedValue({ id: 'pr-1' } as never);
+
+    const res = await PATCH(makePatch({ status: 'ACTIVE' }), ctx());
+    expect(res.status).toBe(200);
+    expect(prismaMock.propertyRequest.update).toHaveBeenCalledWith({
+      where: { id: 'pr-1' },
+      data: { status: 'ACTIVE' },
+      select: { id: true },
+    });
+  });
 });
 
 describe('DELETE /api/property-requests/[id]', () => {

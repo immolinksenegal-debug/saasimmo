@@ -16,14 +16,14 @@ export function PropertyRequestActions({
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
 
-  async function markFulfilled() {
+  async function setStatus(nextStatus: 'ACTIVE' | 'FULFILLED', successMessage: string) {
     setPending(true);
     try {
       await api(`/api/property-requests/${requestId}`, {
         method: 'PATCH',
-        body: { status: 'FULFILLED' },
+        body: { status: nextStatus },
       });
-      toast('Demande marquée comme trouvée.');
+      toast(successMessage);
       router.refresh();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Action impossible.', 'error');
@@ -52,11 +52,21 @@ export function PropertyRequestActions({
       {status === 'ACTIVE' && (
         <button
           type="button"
-          onClick={markFulfilled}
+          onClick={() => setStatus('FULFILLED', 'Demande marquée comme trouvée.')}
           disabled={pending}
           className="im-tap cursor-pointer text-[13px] font-bold text-brand-green underline disabled:opacity-50"
         >
           Marquer trouvé
+        </button>
+      )}
+      {status !== 'ACTIVE' && (
+        <button
+          type="button"
+          onClick={() => setStatus('ACTIVE', 'Demande réactivée.')}
+          disabled={pending}
+          className="im-tap cursor-pointer text-[13px] font-bold text-brand-green underline disabled:opacity-50"
+        >
+          Réactiver
         </button>
       )}
       <button

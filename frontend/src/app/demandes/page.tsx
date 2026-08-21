@@ -5,7 +5,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listPropertyRequestsWithContact } from '@/lib/server/property-requests';
-import { formatFcfa, txnTextClass } from '@/lib/mock/immolink';
+import { formatFcfa, txnTextClass, waMeHref } from '@/lib/mock/immolink';
 
 export const runtime = 'nodejs';
 
@@ -47,8 +47,8 @@ export default async function DemandesPage({
             Demandes de recherche
           </h1>
           <p className="text-[15px] text-brand-muted2">
-            {requests.length} personne{requests.length > 1 ? 's' : ''} cherchent actuellement un
-            bien sur ImmoLink.
+            {requests.length} personne{requests.length > 1 ? 's' : ''}{' '}
+            {requests.length > 1 ? 'cherchent' : 'cherche'} actuellement un bien sur ImmoLink.
           </p>
         </div>
         <Link
@@ -63,6 +63,7 @@ export default async function DemandesPage({
         <select
           name="txn"
           defaultValue={txn ?? ''}
+          aria-label="Filtrer par achat ou location"
           className="rounded-xl border border-brand-green/15 px-3.5 py-2.5 text-sm font-semibold text-brand-slate"
         >
           <option value="">Achat ou location</option>
@@ -72,6 +73,7 @@ export default async function DemandesPage({
         <select
           name="type"
           defaultValue={type ?? ''}
+          aria-label="Filtrer par type de bien"
           className="rounded-xl border border-brand-green/15 px-3.5 py-2.5 text-sm font-semibold text-brand-slate"
         >
           <option value="">Tous types</option>
@@ -85,6 +87,7 @@ export default async function DemandesPage({
           name="city"
           defaultValue={city ?? ''}
           placeholder="Ville"
+          aria-label="Filtrer par ville"
           className="rounded-xl border border-brand-green/15 px-3.5 py-2.5 text-sm font-semibold text-brand-slate"
         />
         <button
@@ -101,9 +104,7 @@ export default async function DemandesPage({
         <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 lg:grid-cols-3">
           {requests.map((r) => {
             const message = `Bonjour, j'ai peut-être un bien qui correspond à votre recherche « ${r.type} — ${r.city} » sur ImmoLink.`;
-            const whatsappHref = r.user.phone
-              ? `https://wa.me/${r.user.phone.replace('+', '')}?text=${encodeURIComponent(message)}`
-              : null;
+            const whatsappHref = r.user.phone ? waMeHref(r.user.phone, message) : null;
             return (
               <div
                 key={r.id}

@@ -48,7 +48,15 @@ export default function NewPropertyRequestPage() {
       toast('Demande publiée avec succès.');
       router.push('/demandes');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Une erreur est survenue.');
+      if (err instanceof ApiError) {
+        setError(
+          err.code === 'VALIDATION_FAILED'
+            ? 'Certains champs sont invalides — vérifie tes informations et réessaie.'
+            : err.message,
+        );
+      } else {
+        setError('Une erreur est survenue.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -135,6 +143,7 @@ export default function NewPropertyRequestPage() {
             required
             type="number"
             min={1}
+            max={2_000_000_000}
             value={budgetMax}
             onChange={(e) => setBudgetMax(e.target.value)}
             placeholder="150000"

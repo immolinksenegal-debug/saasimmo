@@ -10,6 +10,7 @@ export interface PropertyRequestFilter {
   txn?: 'Vente' | 'Location' | undefined;
   city?: string | undefined;
   type?: string | undefined;
+  take?: number | undefined;
 }
 
 export interface PropertyRequestInput {
@@ -39,6 +40,7 @@ export async function listPropertyRequests(
   return prisma.propertyRequest.findMany({
     where: whereFor(filter),
     orderBy: { createdAt: 'desc' },
+    ...(filter.take ? { take: filter.take } : {}),
   });
 }
 
