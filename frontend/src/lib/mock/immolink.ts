@@ -335,7 +335,8 @@ export const FOOTER_COLS: {
       { label: 'Blog', href: '/' },
       { label: 'FAQ', href: '/' },
       { label: 'Contact', href: `mailto:${IMMOLINK_EMAIL}` },
-      { label: 'Mentions légales', href: '/' },
+      { label: 'Mentions légales', href: '/mentions-legales' },
+      { label: 'CGV', href: '/cgv' },
     ],
   },
 ];

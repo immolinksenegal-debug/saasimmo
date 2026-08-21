@@ -139,8 +139,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           amount: catalog.amount,
           currency: 'XOF',
           customer: { email: auth.user.email },
-          successUrl: `${publicUrl}/dashboard?pack=success`,
-          failureUrl: `${publicUrl}/dashboard?pack=failed`,
+          successUrl: `${publicUrl}/paiement/succes?o=${order.id}`,
+          failureUrl: `${publicUrl}/paiement/echec?o=${order.id}`,
           externalRef: order.id,
         }),
       );
