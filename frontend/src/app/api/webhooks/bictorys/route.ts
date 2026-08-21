@@ -30,11 +30,7 @@ import { createWebhookHandler } from '@/lib/server/webhook/handler';
 import { bictorysWebhookProvider } from '@/lib/server/webhook/bictorys';
 import { enqueueOutbox } from '@/lib/server/outbox';
 import { prisma } from '@/lib/server/prisma';
-import {
-  SUBSCRIPTION_PLANS,
-  SUBSCRIPTION_PERIOD_MS,
-  isSubscriptionPlan,
-} from '@/lib/server/subscriptions/plans';
+import { SUBSCRIPTION_PLANS, isSubscriptionPlan } from '@/lib/server/subscriptions/plans';
 
 export const POST = createWebhookHandler({
   prisma,
@@ -71,7 +67,7 @@ export const POST = createWebhookHandler({
       isSubscriptionPlan(meta.plan)
     ) {
       const catalog = SUBSCRIPTION_PLANS[meta.plan];
-      const renewsAt = new Date(Date.now() + SUBSCRIPTION_PERIOD_MS);
+      const renewsAt = new Date(Date.now() + catalog.periodMs);
       await tx.subscription.upsert({
         where: { userId: order.userId },
         create: {

@@ -97,14 +97,23 @@ export function Header() {
               Publier une annonce
             </button>
             {user ? (
-              <button
-                type="button"
-                onClick={onLogout}
-                title="Se déconnecter"
-                className="flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-brand-red to-brand-red-dark text-sm font-bold text-white"
-              >
-                {initials}
-              </button>
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  title="Se déconnecter"
+                  className="flex h-[38px] w-[38px] flex-none cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-brand-red to-brand-red-dark text-sm font-bold text-white"
+                >
+                  {initials}
+                </button>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="im-tap hidden cursor-pointer text-[14.5px] font-semibold text-brand-slate hover:text-brand-red sm:inline"
+                >
+                  Se déconnecter
+                </button>
+              </div>
             ) : (
               <Link
                 href="/login"

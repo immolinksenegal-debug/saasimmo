@@ -5,7 +5,7 @@ import { priceFmt, notificationVisual, timeAgo } from '@/lib/mock/immolink';
 import { listPropertiesByOwner, DEMO_SELLER_EMAIL } from '@/lib/server/properties';
 import { getDashboardKpis } from '@/lib/server/dashboard';
 import { isSubscriptionActive } from '@/lib/server/subscriptions';
-import { FREE_LISTING_QUOTA } from '@/lib/server/subscriptions/plans';
+import { FREE_LISTING_QUOTA, UNLIMITED_LISTING_QUOTA } from '@/lib/server/subscriptions/plans';
 import { optionalAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 
@@ -68,7 +68,10 @@ export default async function DashboardPage() {
   const planLabel = subscriptionActive && subscription ? subscription.plan : 'Gratuit';
   const listingQuota =
     subscriptionActive && subscription ? subscription.listingQuota : FREE_LISTING_QUOTA;
-  const quotaPercent = Math.min(100, Math.round((activeListingCount / listingQuota) * 100));
+  const unlimitedQuota = listingQuota === UNLIMITED_LISTING_QUOTA;
+  const quotaPercent = unlimitedQuota
+    ? 100
+    : Math.min(100, Math.round((activeListingCount / listingQuota) * 100));
 
   return (
     <main className="animate-im-fade mx-auto max-w-6xl px-4 pt-7.5 pb-15 sm:px-8">
@@ -173,7 +176,9 @@ export default async function DashboardPage() {
             <div className="relative">
               <div className="mb-1 text-[13px] font-bold text-brand-gold">Pack {planLabel}</div>
               <div className="mb-3.5 text-[13.5px] text-brand-cream/80">
-                {activeListingCount} / {listingQuota} annonces utilisées
+                {unlimitedQuota
+                  ? `${activeListingCount} annonces · quota illimité`
+                  : `${activeListingCount} / ${listingQuota} annonces utilisées`}
               </div>
               <div className="mb-3.5 h-2 overflow-hidden rounded-full bg-brand-cream/15">
                 <div

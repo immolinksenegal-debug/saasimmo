@@ -185,13 +185,13 @@ export interface Pack {
   check: string;
   button: string;
   // 'create' (Gratuit) → navigates to /annonces/nouvelle, no charge.
-  // 'checkout' (Standard/Premium) → real Bictorys checkout via
+  // 'checkout' (Standard/Premium/Annuel) → real Bictorys checkout via
   // POST /api/subscriptions/checkout, priced server-side from
   // lib/server/subscriptions/plans.ts (planId identifies which entry).
-  // 'contact' (Professionnel, sales-assisted) just closes the modal — no
-  // self-serve form for it yet.
+  // 'contact' — sales-assisted, just closes the modal. No pack currently
+  // uses this, kept for a future custom/enterprise tier.
   action: 'create' | 'checkout' | 'contact';
-  planId?: 'STANDARD' | 'PREMIUM';
+  planId?: 'STANDARD' | 'PREMIUM' | 'ANNUEL';
 }
 
 export const PACKS: Pack[] = [
@@ -249,18 +249,19 @@ export const PACKS: Pack[] = [
     button: 'bg-brand-red text-white',
   },
   {
-    name: 'Professionnel',
-    price: 'Sur devis',
-    per: 'agences & promoteurs',
+    name: 'Annuelle',
+    price: '250 000 FCFA',
+    per: '/ an',
     popular: false,
     features: [
       'Annonces illimitées',
-      'Vitrine + multi-utilisateurs',
-      'Accès API & export',
-      'Tableau de bord avancé',
+      'Mise en avant + Badge Premium',
+      'Publication prioritaire',
+      'Support prioritaire · facturation annuelle',
     ],
-    cta: 'Nous contacter',
-    action: 'contact',
+    cta: 'Choisir Annuelle',
+    action: 'checkout',
+    planId: 'ANNUEL',
     card: 'bg-brand-green-dark text-brand-cream border border-brand-green-dark',
     check: 'text-brand-gold',
     button: 'bg-brand-gold text-brand-green-dark',
