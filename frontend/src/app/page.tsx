@@ -5,6 +5,7 @@ import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { Reveal } from '@/components/immolink/Reveal';
 import { HERO_STATS, PROGRAMS, PACKS, TESTIMONIALS } from '@/lib/mock/immolink';
 import { listProperties } from '@/lib/server/properties';
+import { getActiveBanner } from '@/lib/server/banners';
 
 export const runtime = 'nodejs';
 // New listings should show up without a full redeploy — revalidate this
@@ -12,7 +13,7 @@ export const runtime = 'nodejs';
 export const revalidate = 60;
 
 export default async function Home() {
-  const all = await listProperties({ take: 24 });
+  const [all, banner] = await Promise.all([listProperties({ take: 24 }), getActiveBanner()]);
   const featured = all.filter((p) => ['Premium', 'Coup de cœur'].includes(p.badge)).slice(0, 3);
   const recent = all.slice(0, 6);
 
@@ -56,6 +57,38 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* PUBLICITÉ (banner géré depuis /admin/promotions) */}
+      {banner && (
+        <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-8">
+          <div className="relative overflow-hidden rounded-2xl">
+            <span className="absolute top-3 left-3 z-10 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold tracking-wide text-white uppercase">
+              Publicité
+            </span>
+            {banner.linkUrl ? (
+              <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer sponsored">
+                <Image
+                  src={banner.imageUrl}
+                  alt="Publicité"
+                  width={1200}
+                  height={400}
+                  className="w-full rounded-2xl object-cover"
+                  sizes="(min-width: 1152px) 1152px, 100vw"
+                />
+              </a>
+            ) : (
+              <Image
+                src={banner.imageUrl}
+                alt="Publicité"
+                width={1200}
+                height={400}
+                className="w-full rounded-2xl object-cover"
+                sizes="(min-width: 1152px) 1152px, 100vw"
+              />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* BIENS A LA UNE */}
       <Reveal>

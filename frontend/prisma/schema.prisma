@@ -56,6 +56,7 @@ model User {
   // on their domain models.
   ownedOrganizations Organization[]      @relation("OrgOwner")
   memberships        OrganizationMember[] @relation("OrgMembership")
+  promoBanners       PromoBanner[]
 
   @@index([email])
   @@index([role])
@@ -90,6 +91,26 @@ model AdminAction {
   @@index([actorId, createdAt])
   @@index([action, createdAt])
   @@index([targetType, targetId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Homepage promo banner — admin-managed ad slot (ImmoLink's own promos or
+// a paying client's). Only one banner is meant to be ACTIVE at a time; the
+// homepage renders the most recently created active row. Managed from
+// /admin/promotions (upload image via the existing /api/upload pipeline,
+// set an optional click-through link, toggle active, delete old ones) —
+// no redeploy needed to change the ad.
+// ───────────────────────────────────────────────────────────────────────
+model PromoBanner {
+  id          String   @id @default(cuid())
+  imageUrl    String
+  linkUrl     String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([active, createdAt])
 }
 
 // ───────────────────────────────────────────────────────────────────────

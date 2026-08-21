@@ -16,6 +16,9 @@ import type { Property } from '@prisma/client';
 export const IMMOLINK_PHONE = '+221 77 117 79 77';
 export const IMMOLINK_PHONE_E164 = '+221771177977';
 export const IMMOLINK_EMAIL = 'immolinksenegal@gmail.com';
+export const IMMOLINK_FACEBOOK_URL = 'https://www.facebook.com/reel/1208687211473504';
+export const IMMOLINK_INSTAGRAM_URL = 'https://www.instagram.com/immolinksenegal';
+export const IMMOLINK_WHATSAPP_URL = `https://wa.me/${IMMOLINK_PHONE_E164.replace('+', '')}`;
 
 export function formatFcfa(n: number): string {
   return Math.round(n)
