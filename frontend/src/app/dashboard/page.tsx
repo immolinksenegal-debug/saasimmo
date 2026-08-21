@@ -31,11 +31,18 @@ export default async function DashboardPage() {
         }),
         getDashboardKpis(prisma, ownerId),
         prisma.subscription.findUnique({ where: { userId: ownerId } }),
-        prisma.user.findUnique({ where: { id: ownerId }, select: { name: true, email: true } }),
+        prisma.user.findUnique({
+          where: { id: ownerId },
+          select: { name: true, email: true, role: true },
+        }),
       ])
     : [[], [], null, null];
 
   const displayName = ownerUser?.name?.trim() || ownerUser?.email?.split('@')[0] || 'vendeur';
+  // Gate on the real signed-in user, not the anonymous demo-seller fallback
+  // above, so a logged-out visitor never sees the admin entry point.
+  const isAdmin =
+    Boolean(auth?.user.sub) && (ownerUser?.role === 'ADMIN' || ownerUser?.role === 'SUPERADMIN');
 
   const top4 = rows.slice(0, 4);
   const top4Ids = top4.map((p) => p.id);
@@ -87,9 +94,19 @@ export default async function DashboardPage() {
             Voici la performance de vos annonces cette semaine.
           </p>
         </div>
-        <OpenPacksButton className="cursor-pointer self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold text-brand-cream">
-          + Nouvelle annonce
-        </OpenPacksButton>
+        <div className="flex flex-col items-start gap-2 sm:items-end">
+          <OpenPacksButton className="cursor-pointer self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold text-brand-cream">
+            + Nouvelle annonce
+          </OpenPacksButton>
+          {isAdmin && (
+            <Link
+              href="/admin/orders"
+              className="im-tap flex items-center gap-1.5 rounded-xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-2 text-xs font-bold text-brand-green-dark hover:bg-brand-gold/20"
+            >
+              🛡️ Administration
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* KPI */}
