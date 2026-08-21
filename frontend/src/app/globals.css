@@ -67,6 +67,20 @@ a {
   animation: im-fade 0.35s ease forwards;
 }
 
+@keyframes im-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-im-float {
+  animation: im-float 5s ease-in-out infinite;
+}
+
 /* Tap/press feedback for interactive elements — buttons, cards, links. */
 .im-tap {
   transition: transform 0.15s ease;
@@ -86,7 +100,8 @@ a {
   }
 
   .animate-im-up,
-  .animate-im-fade {
+  .animate-im-fade,
+  .animate-im-float {
     animation: none;
   }
 }
