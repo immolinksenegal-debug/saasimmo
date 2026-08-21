@@ -383,6 +383,7 @@ const NOTIFICATION_VISUALS: Record<string, { icon: string; bg: string }> = {
   VISIT_REQUESTED: { icon: '📅', bg: 'bg-brand-green/10' },
   WELCOME: { icon: '👋', bg: 'bg-[#FBF3D2]' },
   PAYMENT_RECEIVED: { icon: '💳', bg: 'bg-[#FBF3D2]' },
+  INVESTMENT_INTEREST_RECEIVED: { icon: '💰', bg: 'bg-[#FBF3D2]' },
 };
 const DEFAULT_NOTIFICATION_VISUAL = { icon: '🔔', bg: 'bg-brand-green/10' };
 
