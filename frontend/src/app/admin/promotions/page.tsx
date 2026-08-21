@@ -13,6 +13,7 @@ import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/uploadFile';
 import { useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AdminNav } from '@/components/immolink/AdminNav';
 
 interface Banner {
   id: string;
@@ -128,6 +129,7 @@ export default function AdminPromotionsPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-12">
+      <AdminNav />
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Publicités — page d&apos;accueil</h1>
         <p className="text-sm text-gray-600">

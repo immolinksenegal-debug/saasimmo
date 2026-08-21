@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useUser } from '@/contexts/AuthContext';
+import { AdminNav } from '@/components/immolink/AdminNav';
 import { formatFcfa } from '@/lib/mock/immolink';
 
 interface AdminOrder {
@@ -103,6 +104,7 @@ export default function AdminOrdersPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-4 py-12">
+      <AdminNav />
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold">Paiements</h1>
         <p className="text-sm text-gray-600">
