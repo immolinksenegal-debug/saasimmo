@@ -31,7 +31,27 @@ function isAuthedPath(pathname: string): boolean {
   return AUTHED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+// www → apex canonicalization. Both hosts otherwise serve identical content
+// with no redirect between them — split SEO signal (duplicate content, no
+// single canonical URL) and, worse, a session-continuity bug: auth cookies
+// are host-only unless COOKIE_DOMAIN is set, so a session started on one
+// host silently doesn't carry over to the other. Redirecting collapses
+// traffic onto a single host before either problem can occur. Generic (no
+// hardcoded domain) so it's a no-op on preview/vercel.app/localhost hosts,
+// which never start with "www.".
+function wwwRedirect(req: NextRequest): NextResponse | null {
+  const host = req.headers.get('host');
+  if (!host?.startsWith('www.')) return null;
+  const url = req.nextUrl.clone();
+  url.hostname = host.slice('www.'.length);
+  url.port = '';
+  return NextResponse.redirect(url, 308);
+}
+
 export function middleware(req: NextRequest): NextResponse {
+  const redirect = wwwRedirect(req);
+  if (redirect) return redirect;
+
   if (AUTHED_PREFIXES.length === 0) return NextResponse.next();
 
   const { pathname, search } = req.nextUrl;

@@ -1,5 +1,6 @@
 // /agences — real agency directory, derived from Property.agency (no
 // dedicated Agency model yet — see listAgencies() in lib/server/properties.ts).
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { listAgencies } from '@/lib/server/properties';
@@ -7,6 +8,13 @@ import { agentInitials } from '@/lib/mock/immolink';
 
 export const runtime = 'nodejs';
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Agences immobilières partenaires au Sénégal',
+  description:
+    'Découvrez les agences et promoteurs immobiliers partenaires d’ImmoLink Sénégal, leurs annonces et leurs biens disponibles à la vente ou à la location.',
+  alternates: { canonical: '/agences' },
+};
 
 export default async function AgenciesPage() {
   const agencies = await listAgencies();

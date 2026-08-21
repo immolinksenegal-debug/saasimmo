@@ -1,6 +1,7 @@
 // /investir — real investment stats + curated opportunities. No fabricated
 // "rendement locatif %" — see getInvestmentStats() for why (no sale/rent
 // pairing exists in the data model to compute a real yield from).
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { getInvestmentStats, listInvestmentOpportunities } from '@/lib/server/properties';
@@ -8,6 +9,13 @@ import { formatFcfa } from '@/lib/mock/immolink';
 
 export const runtime = 'nodejs';
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'Investir dans l’immobilier au Sénégal',
+  description:
+    'Prix moyen au m², rendements locatifs et opportunités d’investissement immobilier au Sénégal — données réelles issues des annonces actives sur ImmoLink.',
+  alternates: { canonical: '/investir' },
+};
 
 export default async function InvestPage() {
   const [stats, opportunities] = await Promise.all([

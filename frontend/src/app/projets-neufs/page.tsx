@@ -5,9 +5,17 @@
 // promoter-led developments, not individual Property rows — there's no
 // dedicated Program model yet, so each card links to a real /recherche
 // search scoped to that program's city.
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PROGRAMS } from '@/lib/mock/immolink';
+
+export const metadata: Metadata = {
+  title: 'Programmes immobiliers neufs au Sénégal',
+  description:
+    'Découvrez les programmes immobiliers neufs des promoteurs partenaires d’ImmoLink Sénégal — appartements et villas en construction à Dakar et ailleurs au Sénégal.',
+  alternates: { canonical: '/projets-neufs' },
+};
 
 export default function NewProgramsPage() {
   return (

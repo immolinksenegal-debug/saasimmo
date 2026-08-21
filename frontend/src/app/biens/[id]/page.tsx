@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -13,8 +14,42 @@ import {
   propertyAmenities,
 } from '@/lib/mock/immolink';
 import { getPropertyWithOwnerById, recordPropertyView } from '@/lib/server/properties';
+import { SITE_URL } from '@/lib/seo';
 
 export const runtime = 'nodejs';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const property = await getPropertyWithOwnerById(id);
+  if (!property) return {};
+
+  const title = `${property.title} — ${property.txn === 'Vente' ? 'à vendre' : 'à louer'} à ${property.quartier}, ${property.city}`;
+  const description = propertyDescription(property).slice(0, 200);
+  const url = `${SITE_URL}/biens/${property.id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      url,
+      title,
+      description,
+      images: [{ url: property.image, alt: property.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [property.image],
+    },
+  };
+}
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,8 +61,27 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const desc = propertyDescription(property);
   const amenities = propertyAmenities();
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Recherche', item: `${SITE_URL}/recherche` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: property.title,
+        item: `${SITE_URL}/biens/${property.id}`,
+      },
+    ],
+  };
+
   return (
     <main className="animate-im-fade mx-auto max-w-6xl px-4 pt-5.5 pb-15 sm:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="mb-4 text-[13px] font-semibold text-brand-muted">
         <Link href="/" className="text-brand-muted hover:text-brand-red">
           Accueil

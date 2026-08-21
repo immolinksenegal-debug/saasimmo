@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { SortSelect } from '@/components/immolink/SortSelect';
@@ -5,6 +6,13 @@ import { MAP_PINS } from '@/lib/mock/immolink';
 import { listProperties, type PropertySort } from '@/lib/server/properties';
 
 export const runtime = 'nodejs';
+
+export const metadata: Metadata = {
+  title: 'Recherche de biens immobiliers au Sénégal',
+  description:
+    'Parcourez les annonces immobilières au Sénégal — appartements, villas, terrains et bureaux à vendre ou à louer à Dakar et dans tout le pays.',
+  alternates: { canonical: '/recherche' },
+};
 
 function chipClass(active: boolean) {
   return active
