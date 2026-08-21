@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { SortSelect } from '@/components/immolink/SortSelect';
-import { MAP_PINS } from '@/lib/mock/immolink';
+import { SearchMap } from '@/components/immolink/SearchMap';
 import { listProperties, type PropertySort } from '@/lib/server/properties';
 
 export const runtime = 'nodejs';
@@ -112,18 +112,17 @@ export default async function ResultsPage({
         </div>
 
         {/* MAP */}
-        <div className="sticky top-24 hidden h-[calc(100vh-120px)] overflow-hidden rounded-[20px] border border-brand-green/12 bg-linear-to-br from-[#e5ebe6] to-[#d6ded7] lg:block">
-          <div className="absolute top-4 left-4 rounded-[10px] bg-white px-3.5 py-2.25 text-[12.5px] font-bold shadow-[0_6px_16px_-8px_rgba(0,0,0,0.4)]">
-            🗺️ Carte interactive · Dakar
-          </div>
-          {MAP_PINS.map((mp) => (
-            <div
-              key={mp.price}
-              className={`absolute -translate-x-1/2 -translate-y-full rounded-full bg-brand-green px-2.75 py-1.5 text-xs font-extrabold whitespace-nowrap text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] ${mp.top} ${mp.left}`}
-            >
-              {mp.price}
-            </div>
-          ))}
+        <div className="sticky top-24 hidden h-[calc(100vh-120px)] overflow-hidden rounded-[20px] border border-brand-green/12 lg:block">
+          <SearchMap
+            properties={results.map((p) => ({
+              id: p.id,
+              title: p.title,
+              price: p.price,
+              unit: p.unit,
+              city: p.city,
+              quartier: p.quartier,
+            }))}
+          />
         </div>
       </div>
     </main>

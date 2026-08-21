@@ -76,6 +76,30 @@ a {
   transform: scale(0.96);
 }
 
+/* SearchMap price-pin markers (components/immolink/SearchMap.tsx) — Leaflet
+   wraps divIcon html in `.leaflet-div-icon`, which ships a white
+   background + border by default; neutralized here so our own pill styling
+   shows through. */
+.leaflet-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.im-map-pin {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background: var(--color-brand-green);
+  color: var(--color-brand-cream);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--color-brand-cream);
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .im-tap {
     transition: none;

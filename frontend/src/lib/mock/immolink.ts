@@ -340,14 +340,6 @@ export const FOOTER_COLS: {
   },
 ];
 
-export const MAP_PINS = [
-  { top: 'top-[32%]', left: 'left-[40%]', price: '185M' },
-  { top: 'top-[52%]', left: 'left-[62%]', price: '142M' },
-  { top: 'top-[44%]', left: 'left-[26%]', price: '48M' },
-  { top: 'top-[66%]', left: 'left-[48%]', price: '650k' },
-  { top: 'top-[28%]', left: 'left-[70%]', price: '210M' },
-];
-
 export const KPIS = [
   {
     l: 'Vues (7j)',
