@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { OpenPacksButton } from '@/components/immolink/OpenPacksButton';
 import { DeleteListingButton } from '@/components/immolink/DeleteListingButton';
-import { priceFmt, notificationVisual, timeAgo } from '@/lib/mock/immolink';
+import { priceFmt, formatFcfa, notificationVisual, timeAgo } from '@/lib/mock/immolink';
 import { listPropertiesByOwner, DEMO_SELLER_EMAIL } from '@/lib/server/properties';
+import { listPropertyRequestsByOwner } from '@/lib/server/property-requests';
+import { PropertyRequestActions } from '@/components/immolink/PropertyRequestActions';
 import { getDashboardKpis } from '@/lib/server/dashboard';
 import { isSubscriptionActive } from '@/lib/server/subscriptions';
 import { FREE_LISTING_QUOTA, UNLIMITED_LISTING_QUOTA } from '@/lib/server/subscriptions/plans';
@@ -22,6 +24,7 @@ export default async function DashboardPage() {
     ownerId = demoSeller?.id;
   }
   const rows = ownerId ? await listPropertiesByOwner(ownerId) : [];
+  const myRequests = ownerId ? await listPropertyRequestsByOwner(ownerId) : [];
   const [notifications, kpis, subscription, ownerUser] = ownerId
     ? await Promise.all([
         prisma.notification.findMany({
@@ -243,6 +246,49 @@ export default async function DashboardPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* MES DEMANDES */}
+      <div className="mt-6 overflow-hidden rounded-[20px] border border-brand-green/8 bg-white">
+        <div className="flex items-center justify-between border-b border-brand-green/8 px-6 py-5">
+          <h3 className="text-lg font-extrabold">Mes demandes</h3>
+          <Link
+            href="/demandes/nouvelle"
+            className="im-tap text-[13px] font-bold text-brand-green underline"
+          >
+            + Nouvelle demande
+          </Link>
+        </div>
+        {myRequests.length === 0 ? (
+          <p className="px-6 py-5 text-[13px] font-medium text-brand-muted2">
+            Aucune demande de recherche publiée.
+          </p>
+        ) : (
+          myRequests.map((r) => (
+            <div
+              key={r.id}
+              className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2fr_1fr_1.3fr] sm:items-center sm:gap-0"
+            >
+              <div>
+                <div className="text-[14.5px] font-bold">
+                  {r.type} · {r.txn === 'Vente' ? 'Achat' : 'Location'}
+                </div>
+                <div className="text-xs font-semibold text-brand-muted">
+                  {r.quartier ? `${r.quartier}, ` : ''}
+                  {r.city} · budget max {formatFcfa(r.budgetMax)} FCFA
+                </div>
+              </div>
+              <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
+                {r.status === 'ACTIVE'
+                  ? 'Active'
+                  : r.status === 'FULFILLED'
+                    ? 'Trouvé'
+                    : 'Archivée'}
+              </span>
+              <PropertyRequestActions requestId={r.id} status={r.status} />
+            </div>
+          ))
+        )}
       </div>
     </main>
   );

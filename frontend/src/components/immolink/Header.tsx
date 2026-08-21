@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { label: 'Louer', href: '/recherche?txn=location' },
   { label: 'Projets neufs', href: '/projets-neufs' },
   { label: 'Agences', href: '/agences' },
+  { label: 'Demandes', href: '/demandes' },
   { label: 'Investir', href: '/investir' },
 ];
 
