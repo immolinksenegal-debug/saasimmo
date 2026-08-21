@@ -120,4 +120,36 @@ describe('GET /api/property-requests', () => {
       expect.objectContaining({ where: expect.not.objectContaining({ type: 'Chateau' }) }),
     );
   });
+
+  it('never leaks the requester phone, even if the query layer returned it', async () => {
+    // Prove the boundary structurally: even if a row shaped like
+    // listPropertyRequestsWithContact's output ever flowed through this
+    // public GET path, the phone would not survive serialization.
+    prismaMock.propertyRequest.findMany.mockResolvedValue([
+      {
+        id: 'pr-1',
+        userId: 'user-1',
+        txn: 'Location',
+        type: 'Appartement',
+        city: 'Dakar',
+        quartier: '',
+        budgetMax: 150_000,
+        bedsMin: 2,
+        message: '',
+        status: 'ACTIVE',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+        user: { phone: '+221771234567' },
+      },
+    ] as never);
+
+    const req = new NextRequest('http://test/api/property-requests');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    const raw = JSON.stringify(json);
+    expect(raw).not.toContain('+221771234567');
+    expect(raw).not.toContain('phone');
+    expect(json.items[0].user).toBeUndefined();
+  });
 });

@@ -27,7 +27,7 @@ function whereFor(filter: PropertyRequestFilter) {
   return {
     status: 'ACTIVE' as const,
     ...(txn ? { txn } : {}),
-    ...(city ? { city } : {}),
+    ...(city ? { city: { contains: city.trim(), mode: 'insensitive' as const } } : {}),
     ...(type ? { type } : {}),
   };
 }
@@ -88,5 +88,25 @@ export async function createPropertyRequest(
 export function serializePropertyRequest(
   r: PropertyRequest,
 ): Omit<PropertyRequest, 'createdAt' | 'updatedAt'> & { createdAt: string; updatedAt: string } {
-  return { ...r, createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt.toISOString() };
+  // Built explicitly from named fields (not a spread of `r`) so an accidental
+  // extra key — e.g. a caller passing a row shaped like
+  // PropertyRequest & { user: {...} } from listPropertyRequestsWithContact —
+  // is dropped by construction rather than by convention. TS excess-property
+  // checking only fires on fresh object literals, not on spreads/variables,
+  // so a spread here would silently pass through the requester's contact info.
+  const { id, userId, txn, type, city, quartier, budgetMax, bedsMin, message, status } = r;
+  return {
+    id,
+    userId,
+    txn,
+    type,
+    city,
+    quartier,
+    budgetMax,
+    bedsMin,
+    message,
+    status,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  };
 }

@@ -165,11 +165,26 @@ export default function NewPropertyRequestPage() {
           />
         </label>
 
+        {!user.phone && (
+          <p className="rounded-xl border border-brand-gold/40 bg-brand-gold/10 px-4 py-3 text-xs font-medium text-brand-slate">
+            Ajoute un{' '}
+            <Link href="/settings" className="font-bold text-brand-green hover:text-brand-red">
+              numéro de téléphone dans tes paramètres
+            </Link>{' '}
+            avant de publier — sans lui, personne ne pourra te contacter.
+          </p>
+        )}
+
         {error && (
           <p role="alert" className="text-sm font-semibold text-brand-red">
             {error}
           </p>
         )}
+
+        <span className="text-xs font-medium text-brand-muted">
+          Ton numéro de téléphone (renseigné dans tes paramètres) sera affiché publiquement sur
+          cette demande pour que les agences puissent te contacter.
+        </span>
 
         <button
           type="submit"

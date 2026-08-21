@@ -74,6 +74,10 @@ describe('PATCH /api/property-requests/[id]', () => {
 
     const res = await PATCH(makePatch({ status: 'FULFILLED' }), ctx());
     expect(res.status).toBe(200);
+    expect(prismaMock.propertyRequest.findFirst).toHaveBeenCalledWith({
+      where: { id: 'pr-1', userId: 'user-1' },
+      select: { id: true },
+    });
     expect(prismaMock.propertyRequest.update).toHaveBeenCalledWith({
       where: { id: 'pr-1' },
       data: { status: 'FULFILLED' },
@@ -96,6 +100,10 @@ describe('DELETE /api/property-requests/[id]', () => {
 
     const res = await DELETE(makeDelete(), ctx());
     expect(res.status).toBe(200);
+    expect(prismaMock.propertyRequest.findFirst).toHaveBeenCalledWith({
+      where: { id: 'pr-1', userId: 'user-1' },
+      select: { id: true },
+    });
     const json = await res.json();
     expect(json).toEqual({ ok: true });
   });
