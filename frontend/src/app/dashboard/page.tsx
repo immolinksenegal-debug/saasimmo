@@ -259,40 +259,61 @@ export default async function DashboardPage() {
               + Publier un projet
             </Link>
           </div>
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2fr_1fr_1.3fr] sm:items-center sm:gap-0"
-            >
-              <Link href={`/projets-neufs/${p.id}`} className="flex items-center gap-3">
-                <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
-                <div>
-                  <div className="text-[14.5px] font-bold">{p.title}</div>
-                  <div className="text-xs font-semibold text-brand-muted">
-                    À partir de {formatFcfa(p.priceFrom)} FCFA
+          {projects.map((p) => {
+            const isActive = p.recordStatus === 'ACTIVE';
+            return (
+              <div
+                key={p.id}
+                className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2fr_1fr_1.3fr] sm:items-center sm:gap-0"
+              >
+                {isActive ? (
+                  <Link href={`/projets-neufs/${p.id}`} className="flex items-center gap-3">
+                    <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
+                    <div>
+                      <div className="text-[14.5px] font-bold">{p.title}</div>
+                      <div className="text-xs font-semibold text-brand-muted">
+                        À partir de {formatFcfa(p.priceFrom)} FCFA
+                      </div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
+                    <div>
+                      <div className="text-[14.5px] font-bold">{p.title}</div>
+                      <div className="text-xs font-semibold text-brand-muted">
+                        À partir de {formatFcfa(p.priceFrom)} FCFA
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Link>
-              <span>
-                <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
-                  {p.recordStatus === 'ACTIVE' ? 'En ligne' : 'Archivé'}
+                )}
+                <span>
+                  <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
+                    {isActive ? 'En ligne' : 'Archivé'}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-3">
-                <Link
-                  href={`/projets-neufs/${p.id}/modifier`}
-                  className="im-tap text-[13px] font-bold text-brand-green underline"
-                >
-                  Modifier
-                </Link>
-                <DeleteProjectButton
-                  projectId={p.id}
-                  title={p.title}
-                  className="im-tap cursor-pointer text-[13px] font-bold text-brand-red underline disabled:opacity-50"
-                />
-              </span>
-            </div>
-          ))}
+                <span className="flex items-center gap-3">
+                  {isActive ? (
+                    <>
+                      <Link
+                        href={`/projets-neufs/${p.id}/modifier`}
+                        className="im-tap text-[13px] font-bold text-brand-green underline"
+                      >
+                        Modifier
+                      </Link>
+                      <DeleteProjectButton
+                        projectId={p.id}
+                        title={p.title}
+                        className="im-tap cursor-pointer text-[13px] font-bold text-brand-red underline disabled:opacity-50"
+                      />
+                    </>
+                  ) : (
+                    <span className="text-[13px] font-semibold text-brand-muted2">Archivé</span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </main>

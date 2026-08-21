@@ -53,6 +53,20 @@ describe('POST /api/investment-projects/[id]/interests', () => {
     const json = await res.json();
     expect(json).toEqual({ id: 'int-1' });
     expect(mockCreateNotification).toHaveBeenCalledTimes(1);
+    expect(mockCreateNotification).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        userId: 'owner-1',
+        type: 'INVESTMENT_INTEREST_RECEIVED',
+        dedupeKey: 'investment-interest-received:int-1',
+        data: {
+          projectId: 'proj-1',
+          interestId: 'int-1',
+          requesterName: 'Fatou Diop',
+          requesterPhone: '+221771234567',
+        },
+      }),
+    );
   });
 
   it('project not found returns 404 before touching the DB', async () => {
