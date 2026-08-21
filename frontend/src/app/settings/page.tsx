@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { api, ApiError } from '@/lib/api';
 import { useAuth, useUser } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { normalizeSenegalPhone } from '@/lib/phone';
 
 export default function SettingsPage() {
   const user = useUser();
@@ -112,9 +113,11 @@ export default function SettingsPage() {
     setPhoneError(null);
     setPhoneSubmitting(true);
     try {
-      await api('/api/auth/me', { method: 'PATCH', body: { phone: phone.trim() } });
+      const normalizedPhone = normalizeSenegalPhone(phone);
+      await api('/api/auth/me', { method: 'PATCH', body: { phone: normalizedPhone } });
+      setPhone(normalizedPhone);
       toast(
-        phone.trim() ? 'Numéro de contact enregistré.' : 'Numéro de contact retiré.',
+        normalizedPhone ? 'Numéro de contact enregistré.' : 'Numéro de contact retiré.',
         'success',
       );
       await refresh();

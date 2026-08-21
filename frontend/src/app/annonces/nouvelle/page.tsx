@@ -7,6 +7,7 @@ import { api, ApiError } from '@/lib/api';
 import { uploadFile } from '@/lib/uploadFile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { normalizeSenegalPhone } from '@/lib/phone';
 
 const TYPES = ['Villa', 'Appartement', 'Terrain', 'Bureau'] as const;
 const MAX_PHOTOS = 3;
@@ -45,8 +46,9 @@ export default function NewListingPage() {
     setError(null);
     setSubmitting(true);
     try {
-      if (user && phone.trim() !== (user.phone ?? '')) {
-        await api('/api/auth/me', { method: 'PATCH', body: { phone: phone.trim() } });
+      const normalizedPhone = normalizeSenegalPhone(phone);
+      if (user && normalizedPhone !== (user.phone ?? '')) {
+        await api('/api/auth/me', { method: 'PATCH', body: { phone: normalizedPhone } });
       }
 
       let images: string[] = [];
