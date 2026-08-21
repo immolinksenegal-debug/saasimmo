@@ -8,12 +8,15 @@ export function OwnerContactCard({
   ownerPhone,
   ownerEmail,
   propertyTitle,
+  contextLabel = 'annonce',
 }: {
   ownerPhone: string | null;
   ownerEmail: string;
   propertyTitle: string;
+  /** Noun used in the generated contact message — "annonce" (default, /biens) or "projet" (/projets-neufs). */
+  contextLabel?: string;
 }) {
-  const message = `Bonjour, je suis intéressé(e) par votre annonce « ${propertyTitle} » sur ImmoLink.`;
+  const message = `Bonjour, je suis intéressé(e) par votre ${contextLabel} « ${propertyTitle} » sur ImmoLink.`;
   const whatsappHref = ownerPhone ? waMeHref(ownerPhone, message) : null;
   const mailHref = `mailto:${ownerEmail}?subject=${encodeURIComponent(
     `Question sur : ${propertyTitle}`,

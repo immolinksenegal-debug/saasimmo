@@ -73,3 +73,27 @@ export function visitRequested(
     dedupeKey: `visit-requested:${visitRequestId}`,
   };
 }
+
+/**
+ * Fired when a visitor submits "Manifester mon intérêt" on an investment
+ * project detail page. dedupeKey is keyed on the InvestmentInterest row id
+ * (already unique), not a timestamp — each submission is a distinct real
+ * event, not a retry.
+ */
+export function investmentInterestReceived(
+  ownerId: string,
+  interestId: string,
+  projectId: string,
+  projectTitle: string,
+  requesterName: string,
+  requesterPhone: string,
+): CreateNotificationInput {
+  return {
+    userId: ownerId,
+    type: 'INVESTMENT_INTEREST_RECEIVED',
+    title: 'Nouveau contact investisseur',
+    body: `${requesterName} (${requesterPhone}) s'intéresse à votre projet « ${projectTitle} ».`,
+    data: { projectId, interestId, requesterName, requesterPhone },
+    dedupeKey: `investment-interest-received:${interestId}`,
+  };
+}

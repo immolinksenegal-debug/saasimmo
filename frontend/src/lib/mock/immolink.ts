@@ -151,36 +151,6 @@ export const HERO_STATS = [
   { v: '96%', l: 'Clients satisfaits' },
 ];
 
-export const PROGRAMS = [
-  {
-    name: 'Les Jardins d’Almadies',
-    city: 'Dakar',
-    lots: '48 lots',
-    from: '32M FCFA',
-    status: 'En cours',
-    image:
-      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=700&q=80&auto=format&fit=crop',
-  },
-  {
-    name: 'Résidence Océane',
-    city: 'Saly',
-    lots: '120 apparts',
-    from: '45M FCFA',
-    status: 'Sur plan',
-    image:
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=700&q=80&auto=format&fit=crop',
-  },
-  {
-    name: 'Cité Émeraude',
-    city: 'Diamniadio',
-    lots: '80 villas',
-    from: '28M FCFA',
-    status: 'Livraison 2027',
-    image:
-      'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=700&q=80&auto=format&fit=crop',
-  },
-];
-
 export interface Pack {
   name: string;
   price: string;
@@ -390,6 +360,7 @@ const NOTIFICATION_VISUALS: Record<string, { icon: string; bg: string }> = {
   VISIT_REQUESTED: { icon: '📅', bg: 'bg-brand-green/10' },
   WELCOME: { icon: '👋', bg: 'bg-[#FBF3D2]' },
   PAYMENT_RECEIVED: { icon: '💳', bg: 'bg-[#FBF3D2]' },
+  INVESTMENT_INTEREST_RECEIVED: { icon: '💰', bg: 'bg-[#FBF3D2]' },
 };
 const DEFAULT_NOTIFICATION_VISUAL = { icon: '🔔', bg: 'bg-brand-green/10' };
 

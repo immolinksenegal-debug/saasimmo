@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { listProperties } from '@/lib/server/properties';
+import { listInvestmentProjects } from '@/lib/server/investment-projects';
 import { SITE_URL } from '@/lib/seo';
 
 export const runtime = 'nodejs';
@@ -17,6 +18,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const properties = await listProperties({ take: 5000 });
+  const investmentProjects = await listInvestmentProjects({ take: 5000 });
 
   const listingRoutes: MetadataRoute.Sitemap = properties.map((p) => ({
     url: `${SITE_URL}/biens/${p.id}`,
@@ -25,5 +27,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...STATIC_ROUTES, ...listingRoutes];
+  const investmentProjectRoutes: MetadataRoute.Sitemap = investmentProjects.map((p) => ({
+    url: `${SITE_URL}/projets-neufs/${p.id}`,
+    lastModified: p.updatedAt,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  }));
+
+  return [...STATIC_ROUTES, ...listingRoutes, ...investmentProjectRoutes];
 }

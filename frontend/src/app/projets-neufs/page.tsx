@@ -1,23 +1,23 @@
-// /projets-neufs — promoter programs (new-construction developments), the
-// same PROGRAMS data already teased on the homepage's "Programmes
-// immobiliers neufs" section. Distinct concept from "Nouvelles annonces"
-// (recently published listings by any seller): these are curated
-// promoter-led developments, not individual Property rows — there's no
-// dedicated Program model yet, so each card links to a real /recherche
-// search scoped to that program's city.
+// /projets-neufs — programmes immobiliers neufs publiés par leurs
+// promoteurs (InvestmentProject). Remplace le mock PROGRAMS.
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
-import { PROGRAMS } from '@/lib/mock/immolink';
+import { InvestmentProjectCard } from '@/components/immolink/InvestmentProjectCard';
+import { listInvestmentProjects } from '@/lib/server/investment-projects';
+
+export const runtime = 'nodejs';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Programmes immobiliers neufs au Sénégal',
   description:
-    'Découvrez les programmes immobiliers neufs des promoteurs partenaires d’ImmoLink Sénégal — appartements et villas en construction à Dakar et ailleurs au Sénégal.',
+    "Découvrez les programmes immobiliers neufs des promoteurs partenaires d'ImmoLink Sénégal — appartements et villas en construction à Dakar et ailleurs au Sénégal.",
   alternates: { canonical: '/projets-neufs' },
 };
 
-export default function NewProgramsPage() {
+export default async function NewProgramsPage() {
+  const projects = await listInvestmentProjects();
+
   return (
     <main className="animate-im-fade mx-auto max-w-6xl px-4 pt-6.5 pb-15 sm:px-8">
       <div className="mb-1.5 text-[13px] font-semibold text-brand-muted">
@@ -26,44 +26,42 @@ export default function NewProgramsPage() {
         </Link>{' '}
         / Projets neufs
       </div>
-      <div className="mb-8 max-w-2xl">
-        <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-red uppercase">
-          Promoteurs
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-red uppercase">
+            Promoteurs
+          </div>
+          <h1 className="mb-2 font-serif text-4xl leading-none font-normal">
+            Programmes immobiliers neufs
+          </h1>
+          <p className="text-[15px] text-brand-muted2">
+            Des projets publiés directement par leurs promoteurs — villas, appartements et lots
+            viabilisés en cours de commercialisation au Sénégal.
+          </p>
         </div>
-        <h1 className="mb-2 font-serif text-4xl leading-none font-normal">
-          Programmes immobiliers neufs
-        </h1>
-        <p className="text-[15px] text-brand-muted2">
-          Des développements sélectionnés par ImmoLink — villas, appartements et lots viabilisés en
-          cours de commercialisation au Sénégal et en Afrique de l&apos;Ouest.
-        </p>
+        <Link
+          href="/projets-neufs/nouveau"
+          className="im-tap self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold whitespace-nowrap text-brand-cream"
+        >
+          + Publier mon projet
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {PROGRAMS.map((pr) => (
-          <Link
-            key={pr.name}
-            href={`/recherche?q=${encodeURIComponent(pr.city)}`}
-            className="overflow-hidden rounded-2xl border border-brand-green/8 bg-white transition-transform hover:-translate-y-1"
-          >
-            <div className="relative h-48">
-              <Image src={pr.image} alt={pr.name} fill className="object-cover" />
-              <span className="absolute bottom-3 left-3 rounded-full bg-black/45 px-2.75 py-1 text-xs font-bold text-white">
-                {pr.status}
-              </span>
-            </div>
-            <div className="p-4.5">
-              <h3 className="mb-0.5 text-lg font-extrabold">{pr.name}</h3>
-              <div className="mb-3 text-[13px] font-semibold text-brand-muted">
-                {pr.city} · {pr.lots}
-              </div>
-              <div className="text-[13px] font-semibold text-brand-slate">
-                À partir de <span className="font-extrabold text-brand-green">{pr.from}</span>
-              </div>
-            </div>
+      {projects.length === 0 ? (
+        <p className="text-sm text-brand-muted2">
+          Aucun projet publié pour le moment — revenez bientôt, ou{' '}
+          <Link href="/projets-neufs/nouveau" className="font-semibold text-brand-green underline">
+            publiez le vôtre
           </Link>
-        ))}
-      </div>
+          .
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((p) => (
+            <InvestmentProjectCard key={p.id} project={p} />
+          ))}
+        </div>
+      )}
     </main>
   );
 }

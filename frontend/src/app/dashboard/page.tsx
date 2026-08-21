@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { OpenPacksButton } from '@/components/immolink/OpenPacksButton';
 import { DeleteListingButton } from '@/components/immolink/DeleteListingButton';
+import { DeleteProjectButton } from '@/components/immolink/DeleteProjectButton';
 import { priceFmt, formatFcfa, notificationVisual, timeAgo } from '@/lib/mock/immolink';
 import { listPropertiesByOwner, DEMO_SELLER_EMAIL } from '@/lib/server/properties';
 import { listPropertyRequestsByOwner } from '@/lib/server/property-requests';
 import { PropertyRequestActions } from '@/components/immolink/PropertyRequestActions';
+import { listInvestmentProjectsByOwner } from '@/lib/server/investment-projects';
 import { getDashboardKpis } from '@/lib/server/dashboard';
 import { isSubscriptionActive } from '@/lib/server/subscriptions';
 import { FREE_LISTING_QUOTA, UNLIMITED_LISTING_QUOTA } from '@/lib/server/subscriptions/plans';
@@ -25,6 +27,7 @@ export default async function DashboardPage() {
   }
   const rows = ownerId ? await listPropertiesByOwner(ownerId) : [];
   const myRequests = ownerId ? await listPropertyRequestsByOwner(ownerId) : [];
+  const projects = ownerId ? await listInvestmentProjectsByOwner(ownerId) : [];
   const [notifications, kpis, subscription, ownerUser] = ownerId
     ? await Promise.all([
         prisma.notification.findMany({
@@ -298,6 +301,75 @@ export default async function DashboardPage() {
           ))
         )}
       </div>
+
+      {projects.length > 0 && (
+        <div className="mt-6 overflow-hidden rounded-[20px] border border-brand-green/8 bg-white">
+          <div className="flex items-center justify-between border-b border-brand-green/8 px-6 py-5">
+            <h3 className="text-lg font-extrabold">Mes projets d&apos;investissement</h3>
+            <Link
+              href="/projets-neufs/nouveau"
+              className="text-[13px] font-bold text-brand-green underline"
+            >
+              + Publier un projet
+            </Link>
+          </div>
+          {projects.map((p) => {
+            const isActive = p.recordStatus === 'ACTIVE';
+            return (
+              <div
+                key={p.id}
+                className="flex flex-col gap-2 border-b border-brand-green/5 px-6 py-3.5 sm:grid sm:grid-cols-[2fr_1fr_1.3fr] sm:items-center sm:gap-0"
+              >
+                {isActive ? (
+                  <Link href={`/projets-neufs/${p.id}`} className="flex items-center gap-3">
+                    <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
+                    <div>
+                      <div className="text-[14.5px] font-bold">{p.title}</div>
+                      <div className="text-xs font-semibold text-brand-muted">
+                        À partir de {formatFcfa(p.priceFrom)} FCFA
+                      </div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 flex-none rounded-[10px] bg-brand-green/15" />
+                    <div>
+                      <div className="text-[14.5px] font-bold">{p.title}</div>
+                      <div className="text-xs font-semibold text-brand-muted">
+                        À partir de {formatFcfa(p.priceFrom)} FCFA
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <span>
+                  <span className="rounded-full bg-brand-green/10 px-2.75 py-1 text-xs font-bold text-brand-green">
+                    {isActive ? 'En ligne' : 'Archivé'}
+                  </span>
+                </span>
+                <span className="flex items-center gap-3">
+                  {isActive ? (
+                    <>
+                      <Link
+                        href={`/projets-neufs/${p.id}/modifier`}
+                        className="im-tap text-[13px] font-bold text-brand-green underline"
+                      >
+                        Modifier
+                      </Link>
+                      <DeleteProjectButton
+                        projectId={p.id}
+                        title={p.title}
+                        className="im-tap cursor-pointer text-[13px] font-bold text-brand-red underline disabled:opacity-50"
+                      />
+                    </>
+                  ) : (
+                    <span className="text-[13px] font-semibold text-brand-muted2">Archivé</span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }

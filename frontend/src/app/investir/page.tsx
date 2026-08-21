@@ -4,7 +4,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
+import { InvestmentProjectCard } from '@/components/immolink/InvestmentProjectCard';
 import { getInvestmentStats, listInvestmentOpportunities } from '@/lib/server/properties';
+import { listInvestmentProjects } from '@/lib/server/investment-projects';
 import { formatFcfa } from '@/lib/mock/immolink';
 
 export const runtime = 'nodejs';
@@ -18,9 +20,10 @@ export const metadata: Metadata = {
 };
 
 export default async function InvestPage() {
-  const [stats, opportunities] = await Promise.all([
+  const [stats, opportunities, projects] = await Promise.all([
     getInvestmentStats(),
     listInvestmentOpportunities(6),
+    listInvestmentProjects({ take: 3 }),
   ]);
 
   const statCards = [
@@ -65,6 +68,25 @@ export default async function InvestPage() {
           </div>
         ))}
       </div>
+
+      {projects.length > 0 && (
+        <div className="mb-9">
+          <div className="mb-6 flex items-end justify-between">
+            <h2 className="font-serif text-3xl leading-none font-normal">Projets à financer</h2>
+            <Link
+              href="/projets-neufs"
+              className="border-b-2 border-brand-red pb-1 text-sm font-bold text-brand-green"
+            >
+              Voir tout →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-5.5 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((p) => (
+              <InvestmentProjectCard key={p.id} project={p} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-6 flex items-end justify-between">
         <h2 className="font-serif text-3xl leading-none font-normal">Opportunités du moment</h2>

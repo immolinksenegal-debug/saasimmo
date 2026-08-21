@@ -3,8 +3,9 @@ import Image from 'next/image';
 import { HomeSearchPanel } from '@/components/immolink/HomeSearchPanel';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { Reveal } from '@/components/immolink/Reveal';
-import { HERO_STATS, PROGRAMS, PACKS, TESTIMONIALS } from '@/lib/mock/immolink';
+import { HERO_STATS, PACKS, TESTIMONIALS, formatFcfa } from '@/lib/mock/immolink';
 import { listProperties } from '@/lib/server/properties';
+import { listInvestmentProjects } from '@/lib/server/investment-projects';
 import { getActiveBanner } from '@/lib/server/banners';
 
 export const runtime = 'nodejs';
@@ -13,7 +14,11 @@ export const runtime = 'nodejs';
 export const revalidate = 60;
 
 export default async function Home() {
-  const [all, banner] = await Promise.all([listProperties({ take: 24 }), getActiveBanner()]);
+  const [all, banner, programs] = await Promise.all([
+    listProperties({ take: 24 }),
+    getActiveBanner(),
+    listInvestmentProjects({ take: 3 }),
+  ]);
   const featured = all.filter((p) => ['Premium', 'Coup de cœur'].includes(p.badge)).slice(0, 3);
   const recent = all.slice(0, 6);
 
@@ -116,51 +121,56 @@ export default async function Home() {
       </Reveal>
 
       {/* PROJETS NEUFS */}
-      <Reveal>
-        <section className="mx-auto max-w-6xl px-4 pt-14 pb-2 sm:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-brand-green-dark p-6 text-brand-cream sm:p-11">
-            <div className="absolute inset-0 bg-[radial-gradient(700px_300px_at_100%_0,rgba(242,194,0,.22),transparent_60%)]" />
-            <div className="relative mb-6.5 flex items-end justify-between">
-              <div>
-                <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-gold uppercase">
-                  Promoteurs
+      {programs.length > 0 && (
+        <Reveal>
+          <section className="mx-auto max-w-6xl px-4 pt-14 pb-2 sm:px-8">
+            <div className="relative overflow-hidden rounded-3xl bg-brand-green-dark p-6 text-brand-cream sm:p-11">
+              <div className="absolute inset-0 bg-[radial-gradient(700px_300px_at_100%_0,rgba(242,194,0,.22),transparent_60%)]" />
+              <div className="relative mb-6.5 flex items-end justify-between">
+                <div>
+                  <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-gold uppercase">
+                    Promoteurs
+                  </div>
+                  <h2 className="font-serif text-3xl leading-none font-normal sm:text-[38px]">
+                    Programmes immobiliers neufs
+                  </h2>
                 </div>
-                <h2 className="font-serif text-3xl leading-none font-normal sm:text-[38px]">
-                  Programmes immobiliers neufs
-                </h2>
-              </div>
-              <Link href="/projets-neufs" className="im-tap text-sm font-bold text-brand-gold">
-                Explorer →
-              </Link>
-            </div>
-            <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-3">
-              {PROGRAMS.map((pr) => (
-                <Link
-                  key={pr.name}
-                  href={`/recherche?q=${encodeURIComponent(pr.city)}`}
-                  className="im-tap overflow-hidden rounded-2xl border border-brand-cream/14 bg-brand-cream/6"
-                >
-                  <div className="relative h-37.5">
-                    <Image src={pr.image} alt={pr.name} fill className="object-cover" />
-                    <span className="absolute bottom-3 left-3 rounded-full bg-black/40 px-2.75 py-1 text-xs font-bold text-white">
-                      {pr.status}
-                    </span>
-                  </div>
-                  <div className="p-4.5">
-                    <h3 className="mb-0.5 text-lg font-extrabold">{pr.name}</h3>
-                    <div className="mb-3 text-[13px] text-brand-cream/66">
-                      {pr.city} · {pr.lots}
-                    </div>
-                    <div className="text-[13px] font-semibold text-brand-cream/82">
-                      À partir de <span className="font-extrabold text-brand-gold">{pr.from}</span>
-                    </div>
-                  </div>
+                <Link href="/projets-neufs" className="im-tap text-sm font-bold text-brand-gold">
+                  Explorer →
                 </Link>
-              ))}
+              </div>
+              <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-3">
+                {programs.map((pr) => (
+                  <Link
+                    key={pr.id}
+                    href={`/projets-neufs/${pr.id}`}
+                    className="im-tap overflow-hidden rounded-2xl border border-brand-cream/14 bg-brand-cream/6"
+                  >
+                    <div className="relative h-37.5">
+                      <Image src={pr.image} alt={pr.title} fill className="object-cover" />
+                      <span className="absolute bottom-3 left-3 rounded-full bg-black/40 px-2.75 py-1 text-xs font-bold text-white">
+                        {pr.status}
+                      </span>
+                    </div>
+                    <div className="p-4.5">
+                      <h3 className="mb-0.5 text-lg font-extrabold">{pr.title}</h3>
+                      <div className="mb-3 text-[13px] text-brand-cream/66">
+                        {pr.city} · {pr.lotsLabel}
+                      </div>
+                      <div className="text-[13px] font-semibold text-brand-cream/82">
+                        À partir de{' '}
+                        <span className="font-extrabold text-brand-gold">
+                          {formatFcfa(pr.priceFrom)} FCFA
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </Reveal>
+          </section>
+        </Reveal>
+      )}
 
       {/* NOUVELLES ANNONCES */}
       <Reveal>
