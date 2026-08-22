@@ -76,7 +76,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-brand-green/10 bg-brand-cream/86 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-8 px-4 py-4 sm:px-8">
+        <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-4 sm:px-8 xl:gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/immolink-emblem.png"
@@ -97,12 +97,12 @@ export function Header() {
             </span>
           </Link>
 
-          <nav className="hidden gap-6 text-[14.5px] font-semibold text-brand-slate lg:flex">
+          <nav className="hidden gap-5 text-[14.5px] font-semibold text-brand-slate xl:flex">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-brand-slate hover:text-brand-red"
+                className="shrink-0 text-nowrap text-brand-slate hover:text-brand-red"
               >
                 {link.label}
               </Link>
@@ -112,7 +112,7 @@ export function Header() {
           <div className="ml-auto flex items-center gap-3.5">
             <Link
               href="/dashboard"
-              className="hidden text-[14.5px] font-semibold text-brand-slate hover:text-brand-red sm:inline"
+              className="hidden text-nowrap text-[14.5px] font-semibold text-brand-slate hover:text-brand-red sm:inline"
             >
               Tableau de bord
             </Link>
@@ -194,7 +194,7 @@ export function Header() {
               onClick={() => setMobileOpen((v) => !v)}
               aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
               aria-expanded={mobileOpen}
-              className="im-tap flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate lg:hidden"
+              className="im-tap flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-xl text-brand-slate xl:hidden"
             >
               {mobileOpen ? '✕' : '☰'}
             </button>
@@ -212,7 +212,7 @@ export function Header() {
           whole block only ever renders below the lg breakpoint via the
           hamburger button above. */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden ${mobileOpen ? '' : 'pointer-events-none'}`}
+        className={`fixed inset-0 z-50 xl:hidden ${mobileOpen ? '' : 'pointer-events-none'}`}
         aria-hidden={!mobileOpen}
       >
         <div

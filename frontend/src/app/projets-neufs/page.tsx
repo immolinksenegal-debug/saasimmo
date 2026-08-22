@@ -41,7 +41,7 @@ export default async function NewProgramsPage() {
         </div>
         <Link
           href="/projets-neufs/nouveau"
-          className="im-tap self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold whitespace-nowrap text-brand-cream"
+          className="im-tap self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold whitespace-nowrap text-white"
         >
           + Publier mon projet
         </Link>

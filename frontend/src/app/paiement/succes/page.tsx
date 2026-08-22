@@ -53,7 +53,7 @@ export default async function PaymentSuccessPage({
       )}
       <Link
         href="/dashboard"
-        className="im-tap mt-2 rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-brand-cream"
+        className="im-tap mt-2 rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-white"
       >
         Retour au tableau de bord
       </Link>

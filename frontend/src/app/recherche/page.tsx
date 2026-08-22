@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 function chipClass(active: boolean) {
   return active
-    ? 'bg-brand-green text-brand-cream border border-brand-green'
+    ? 'bg-brand-green text-white border border-brand-green'
     : 'bg-white text-brand-slate border border-brand-green/15';
 }
 

@@ -53,7 +53,7 @@ export default async function DemandesPage({
         </div>
         <Link
           href="/demandes/nouvelle"
-          className="im-tap cursor-pointer self-start rounded-full bg-brand-green px-5.5 py-2.75 text-sm font-bold text-brand-cream"
+          className="im-tap cursor-pointer self-start rounded-full bg-brand-green px-5.5 py-2.75 text-sm font-bold text-white"
         >
           + Publier une demande
         </Link>
@@ -92,7 +92,7 @@ export default async function DemandesPage({
         />
         <button
           type="submit"
-          className="im-tap cursor-pointer rounded-xl bg-brand-green-dark px-5 py-2.5 text-sm font-bold text-brand-cream"
+          className="im-tap cursor-pointer rounded-xl bg-brand-green-dark px-5 py-2.5 text-sm font-bold text-white"
         >
           Filtrer
         </button>
@@ -130,7 +130,7 @@ export default async function DemandesPage({
                     <>
                       <a
                         href={`tel:${r.user.phone}`}
-                        className="im-tap flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-green py-2.75 text-[13.5px] font-bold text-brand-cream"
+                        className="im-tap flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-green py-2.75 text-[13.5px] font-bold text-white"
                       >
                         📞 Appeler
                       </a>

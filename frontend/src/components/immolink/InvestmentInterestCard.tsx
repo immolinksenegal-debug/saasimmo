@@ -55,7 +55,7 @@ export function InvestmentInterestCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-brand-cream"
+          className="w-full cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-white"
         >
           Manifester mon intérêt
         </button>
@@ -129,7 +129,7 @@ export function InvestmentInterestCard({
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-1 cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-brand-cream disabled:opacity-50"
+                className="mt-1 cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-white disabled:opacity-50"
               >
                 {submitting ? 'Envoi…' : 'Envoyer'}
               </button>

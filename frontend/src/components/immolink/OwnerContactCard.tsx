@@ -31,7 +31,7 @@ export function OwnerContactCard({
         {ownerPhone && (
           <a
             href={`tel:${ownerPhone}`}
-            className="im-tap flex items-center justify-center gap-2 rounded-xl bg-brand-green py-3 text-[14px] font-bold text-brand-cream"
+            className="im-tap flex items-center justify-center gap-2 rounded-xl bg-brand-green py-3 text-[14px] font-bold text-white"
           >
             📞 {ownerPhone}
           </a>

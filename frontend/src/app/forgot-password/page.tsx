@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="im-tap cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-brand-cream disabled:opacity-50"
+          className="im-tap cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-white disabled:opacity-50"
         >
           {submitting ? 'Envoi…' : 'Envoyer le code'}
         </button>

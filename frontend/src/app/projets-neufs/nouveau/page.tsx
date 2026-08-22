@@ -290,7 +290,7 @@ export default function NewInvestmentProjectPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-brand-cream disabled:opacity-50"
+          className="cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-white disabled:opacity-50"
         >
           {submitting ? 'Publication…' : 'Publier le projet'}
         </button>

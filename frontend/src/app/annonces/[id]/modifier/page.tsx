@@ -201,7 +201,7 @@ export default function EditListingPage() {
               onClick={() => setTxn(t)}
               className={`cursor-pointer rounded-xl border py-3 text-sm font-bold ${
                 txn === t
-                  ? 'border-brand-green bg-brand-green text-brand-cream'
+                  ? 'border-brand-green bg-brand-green text-white'
                   : 'border-brand-green/15 bg-white text-brand-slate'
               }`}
             >
@@ -355,7 +355,7 @@ export default function EditListingPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-brand-cream disabled:opacity-50"
+          className="cursor-pointer rounded-xl bg-brand-green py-3.5 text-[15px] font-bold text-white disabled:opacity-50"
         >
           {submitting ? 'Enregistrement…' : 'Enregistrer les modifications'}
         </button>

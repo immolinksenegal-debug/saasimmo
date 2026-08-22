@@ -15,7 +15,7 @@ export default function PaymentFailurePage() {
       <div className="mt-2 flex gap-3">
         <Link
           href="/dashboard"
-          className="im-tap rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-brand-cream"
+          className="im-tap rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-white"
         >
           Réessayer
         </Link>

@@ -101,7 +101,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
-          <OpenPacksButton className="cursor-pointer self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold text-brand-cream">
+          <OpenPacksButton className="cursor-pointer self-start rounded-xl bg-brand-green px-5.5 py-3 text-sm font-bold text-white">
             + Nouvelle annonce
           </OpenPacksButton>
           {isAdmin && (

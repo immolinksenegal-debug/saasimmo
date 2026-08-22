@@ -104,7 +104,7 @@ export function VisitRequestCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mb-2.5 w-full cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-brand-cream"
+          className="mb-2.5 w-full cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-white"
         >
           Demander une visite
         </button>
@@ -200,7 +200,7 @@ export function VisitRequestCard({
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-1 cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-brand-cream disabled:opacity-50"
+                className="mt-1 cursor-pointer rounded-xl bg-brand-green py-3.25 text-[15px] font-bold text-white disabled:opacity-50"
               >
                 {submitting ? 'Envoi…' : 'Envoyer la demande'}
               </button>
