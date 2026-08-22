@@ -29,6 +29,7 @@ export default function NewInvestmentProjectPage() {
   const [developerName, setDeveloperName] = useState('');
   const [phone, setPhone] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,9 +37,30 @@ export default function NewInvestmentProjectPage() {
     if (user) setPhone(user.phone ?? '');
   }, [user]);
 
+  useEffect(() => {
+    const urls = photos.map((f) => URL.createObjectURL(f));
+    setPhotoPreviews(urls);
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [photos]);
+
   function onPickPhotos(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, MAX_PHOTOS);
-    setPhotos(files);
+    const files = Array.from(e.target.files ?? []);
+    if (files.length > 0) setError(null);
+    if (files.length > MAX_PHOTOS) {
+      setError(
+        `Maximum ${MAX_PHOTOS} photos — seules les ${MAX_PHOTOS} premières ont été gardées.`,
+      );
+    }
+    setPhotos(files.slice(0, MAX_PHOTOS));
+    // Reset the native input so picking the same file(s) again after a
+    // removal still fires onChange (browsers dedupe identical FileLists).
+    e.target.value = '';
+  }
+
+  function removePhoto(index: number) {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function onSubmit(e: FormEvent) {
@@ -230,18 +252,32 @@ export default function NewInvestmentProjectPage() {
             Photos du projet ({MAX_PHOTOS} max, au moins 1 requise)
           </span>
           <input
-            required
             type="file"
             accept="image/jpeg,image/png,image/webp"
             multiple
             onChange={onPickPhotos}
             className="rounded-xl border border-brand-green/15 bg-white px-4 py-3 text-sm text-brand-slate"
           />
-          {photos.length > 0 && (
-            <p className="text-xs font-semibold text-brand-muted">
-              {photos.length} photo{photos.length > 1 ? 's' : ''} sélectionnée
-              {photos.length > 1 ? 's' : ''}.
-            </p>
+          {photoPreviews.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-2.5">
+              {photoPreviews.map((src, i) => (
+                <div
+                  key={src}
+                  className="relative h-20 w-20 overflow-hidden rounded-xl border border-brand-green/15"
+                >
+                  {/* blob: object URL — next/image has no loader for it, plain <img> is correct here */}
+                  <img src={src} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    aria-label={`Retirer la photo ${i + 1}`}
+                    className="im-tap absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/60 text-[10px] font-bold text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
