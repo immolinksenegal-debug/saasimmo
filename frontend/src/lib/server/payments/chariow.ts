@@ -184,8 +184,17 @@ export function createChariowProvider(env: ChariowEnv): ChariowProviderHandle {
       const eventType = String(
         payload.event ?? payload.event_type ?? payload.data?.status ?? 'unknown',
       );
+      // Fall back to the event name(s) when `status` is absent from the
+      // payload entirely — a real webhook may carry `event: "settled.sale"`
+      // with no `data.status` field. mapChariowStatus's substring matching
+      // (settle/complete/success/…) still works against an event name, so
+      // this avoids silently classifying a real success/failure as 'other'
+      // (which the shared factory dispatches to neither onPaid nor onFailed).
       const klass = mapChariowStatus(
-        payload.data?.status ?? (payload.status as string | undefined),
+        payload.data?.status ??
+          (payload.status as string | undefined) ??
+          payload.event ??
+          payload.event_type,
       );
       const kind: ParsedIds['kind'] =
         klass === 'PAID' ? 'paid' : klass === 'FAILED' ? 'failed' : 'other';

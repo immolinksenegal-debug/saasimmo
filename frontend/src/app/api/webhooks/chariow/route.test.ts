@@ -6,6 +6,7 @@ const findUnique = vi.fn();
 const create = vi.fn();
 const update = vi.fn();
 const orderFindFirst = vi.fn();
+const orderFindUnique = vi.fn();
 const orderUpdate = vi.fn();
 const subscriptionUpsert = vi.fn();
 const outboxCreate = vi.fn();
@@ -13,7 +14,7 @@ const outboxCreate = vi.fn();
 const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) =>
   fn({
     webhookLog: { findUnique, create, update },
-    order: { findFirst: orderFindFirst, update: orderUpdate },
+    order: { findFirst: orderFindFirst, findUnique: orderFindUnique, update: orderUpdate },
     subscription: { upsert: subscriptionUpsert },
     outboxEvent: { create: outboxCreate },
   }),
@@ -32,6 +33,7 @@ beforeEach(() => {
   create.mockReset();
   update.mockReset();
   orderFindFirst.mockReset();
+  orderFindUnique.mockReset();
   orderUpdate.mockReset();
   subscriptionUpsert.mockReset();
   outboxCreate.mockReset();
@@ -145,6 +147,67 @@ describe('POST /api/webhooks/chariow', () => {
     const { req } = chariowFixtureRequest({ status: 'settled' });
     await POST(req);
     expect(subscriptionUpsert).not.toHaveBeenCalled();
+  });
+
+  it('onPaid is a no-op when the resolved Order is already PAID (double-dispatch guard — Finding 1)', async () => {
+    // Simulates a second delivery for the SAME sale under a DIFFERENT event
+    // name (e.g. "settled.sale" after "successful.sale" already paid it) —
+    // a different (externalId, eventType) dedup key, so the shared factory
+    // does NOT dedupe it; onPaid itself must recognize the order is already
+    // PAID and bail before re-extending the subscription / re-enqueueing.
+    findUnique.mockResolvedValueOnce(null); // webhookLog: not yet seen under THIS eventType
+    orderFindFirst.mockResolvedValueOnce({
+      id: 'o1',
+      status: 'PAID',
+      userId: 'u1',
+      customerEmail: 'a@b.com',
+      metadata: { kind: 'pack_subscription', plan: 'STANDARD' },
+    });
+    const { POST } = await import('./route');
+    const { req } = chariowFixtureRequest({ status: 'settled', event: 'completed.sale' });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(orderUpdate).not.toHaveBeenCalled();
+    expect(subscriptionUpsert).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
+  });
+
+  it('onPaid falls back to custom_metadata.orderId when providerChargeId lookup misses (Finding 4)', async () => {
+    findUnique.mockResolvedValueOnce(null);
+    orderFindFirst.mockResolvedValueOnce(null); // providerChargeId lookup misses
+    orderFindUnique.mockResolvedValueOnce({
+      id: 'order-fallback-1',
+      status: 'PENDING',
+      userId: 'u9',
+      customerEmail: 'g@h.com',
+      metadata: { kind: 'pack_subscription', plan: 'STANDARD' },
+    });
+    const secret = 'test-chariow-webhook-secret';
+    const payload = {
+      event: 'settled.sale',
+      data: {
+        sale_id: 'sale_unmatched',
+        status: 'settled',
+        custom_metadata: { orderId: 'order-fallback-1' },
+      },
+    };
+    const req = new NextRequest(`http://localhost/api/webhooks/chariow?secret=${secret}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: Buffer.from(JSON.stringify(payload)) as unknown as BodyInit,
+    });
+    const { POST } = await import('./route');
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(orderFindUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'order-fallback-1' } }),
+    );
+    expect(orderUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'order-fallback-1' },
+        data: expect.objectContaining({ status: 'PAID' }),
+      }),
+    );
   });
 
   it('an "unpaid" sale event dispatches neither onPaid nor onFailed — Order and Subscription untouched', async () => {

@@ -116,4 +116,35 @@ describe('POST /api/subscriptions/checkout — provider selection', () => {
       expect.objectContaining({ data: expect.objectContaining({ provider: 'chariow' }) }),
     );
   });
+
+  it('idempotency key is scoped per-provider: a same-day PENDING bictorys order does NOT short-circuit a chariow request (Finding 3)', async () => {
+    // First call: bictorys, no existing order -> creates one and its
+    // idempotencyKey embeds "bictorys".
+    mockGetProvider.mockReturnValue({ name: 'bictorys', charge: vi.fn() } as never);
+    mockExecute.mockResolvedValue({ providerChargeId: 'c1', paymentUrl: 'https://pay/1' });
+    prismaMock.order.findUnique.mockResolvedValueOnce(null);
+    const res1 = await POST(makeCheckoutReq({ plan: 'STANDARD', provider: 'bictorys' }));
+    expect(res1.status).toBe(201);
+
+    // Second call, same user/plan/day but provider: "chariow" — must be
+    // treated as a DIFFERENT idempotency key, not short-circuited by the
+    // bictorys order's PENDING/FAILED state.
+    prismaMock.user.findUnique.mockResolvedValue({ phone: '+221771234567' } as never);
+    mockGetChariowProvider.mockReturnValue({ name: 'chariow', charge: vi.fn() } as never);
+    mockChariowExecute.mockResolvedValue({
+      providerChargeId: 'sale_1',
+      paymentUrl: 'https://checkout.chariow/1',
+    });
+    prismaMock.order.findUnique.mockResolvedValueOnce(null); // different key -> no existing row
+    const res2 = await POST(makeCheckoutReq({ plan: 'STANDARD', provider: 'chariow' }));
+    expect(res2.status).toBe(201);
+
+    expect(prismaMock.order.create).toHaveBeenCalledTimes(2);
+    const keys = prismaMock.order.findUnique.mock.calls.map(
+      (c) => (c[0] as { where: { idempotencyKey: string } }).where.idempotencyKey,
+    );
+    expect(keys[0]).toContain(':bictorys:');
+    expect(keys[1]).toContain(':chariow:');
+    expect(keys[0]).not.toBe(keys[1]);
+  });
 });

@@ -72,8 +72,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // Deterministic same-day dedup key — a user double-clicking "Choisir
     // Premium" replays the same in-flight/completed order instead of
-    // starting (and being charged for) a second one.
-    const idemKey = `pack:${auth.user.sub}:${plan}:${new Date().toISOString().slice(0, 10)}`;
+    // starting (and being charged for) a second one. Scoped by provider too:
+    // without this, switching providers mid-flow (e.g. Mobile Money ->
+    // Carte bancaire) would either return the OTHER provider's stale
+    // paymentUrl, or get blocked by the other provider's earlier failure.
+    const idemKey = `pack:${auth.user.sub}:${plan}:${providerName}:${new Date().toISOString().slice(0, 10)}`;
     const existing = await prisma.order.findUnique({ where: { idempotencyKey: idemKey } });
     if (existing) {
       if (existing.status === 'PENDING' || existing.status === 'PAID') {

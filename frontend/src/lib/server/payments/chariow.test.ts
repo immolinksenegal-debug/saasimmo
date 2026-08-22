@@ -109,6 +109,18 @@ describe('createChariowProvider', () => {
     expect(ids).toEqual({ externalId: 'sale_123', eventType: 'settled.sale', kind: 'paid' });
   });
 
+  it('webhookProvider.extractIds falls back to the event name when data.status is absent entirely (Finding 2)', () => {
+    const provider = createChariowProvider(ENV);
+    // No `status` anywhere in the payload — only the event name signals
+    // success. Without the fallback this resolves to kind:'other' and the
+    // webhook silently never activates the order.
+    const ids = provider.webhookProvider.extractIds({
+      event: 'settled.sale',
+      data: { sale_id: 'sale_789' },
+    });
+    expect(ids.kind).toBe('paid');
+  });
+
   it('webhookProvider.extractIds tests "unpaid" before "paid" (unpaid must NOT classify as paid)', () => {
     const provider = createChariowProvider(ENV);
     const ids = provider.webhookProvider.extractIds({

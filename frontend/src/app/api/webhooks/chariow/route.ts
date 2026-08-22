@@ -41,8 +41,19 @@ const innerHandler = createWebhookHandler({
     );
     if (!externalRef) return {};
 
-    const order = await tx.order.findFirst({ where: { providerChargeId: externalRef } });
+    const order =
+      (await tx.order.findFirst({ where: { providerChargeId: externalRef } })) ??
+      (typeof payload.data?.custom_metadata?.orderId === 'string'
+        ? await tx.order.findUnique({ where: { id: payload.data.custom_metadata.orderId } })
+        : null);
     if (!order) return {};
+    // Chariow recognizes THREE distinct success event names (successful.sale,
+    // settled.sale, completed.sale), all classified kind:'paid'. The shared
+    // factory dedups on (externalId, eventType) — each event NAME is a
+    // different dedup key for the same sale, so a second/third delivery for
+    // an already-PAID order must be a no-op here, or renewsAt gets extended
+    // twice and duplicate outbox events fire.
+    if (order.status === 'PAID') return {};
 
     await tx.order.update({
       where: { id: order.id },
@@ -102,7 +113,11 @@ const innerHandler = createWebhookHandler({
       payload.data?.sale_id ?? payload.data?.id ?? payload.sale_id ?? payload.id ?? '',
     );
     if (!externalRef) return {};
-    const order = await tx.order.findFirst({ where: { providerChargeId: externalRef } });
+    const order =
+      (await tx.order.findFirst({ where: { providerChargeId: externalRef } })) ??
+      (typeof payload.data?.custom_metadata?.orderId === 'string'
+        ? await tx.order.findUnique({ where: { id: payload.data.custom_metadata.orderId } })
+        : null);
     if (!order) return {};
     await tx.order.update({ where: { id: order.id }, data: { status: 'FAILED' } });
     return {};
