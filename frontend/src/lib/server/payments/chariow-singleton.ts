@@ -1,3 +1,5 @@
+import 'server-only';
+
 // Lazy-init Chariow provider + its OWN module-level CircuitBreaker — kept
 // separate from Bictorys' breaker (provider-singleton.ts) so a Chariow
 // outage never trips Bictorys' circuit and vice versa. Mirrors
