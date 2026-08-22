@@ -32,10 +32,16 @@ import {
   getProvider,
   PaymentProviderUnconfiguredError,
 } from '@/lib/server/payments/provider-singleton';
+import {
+  getChariowProvider,
+  chariowBreaker,
+  ChariowProviderUnconfiguredError,
+} from '@/lib/server/payments/chariow-singleton';
 import { SUBSCRIPTION_PLANS, isSubscriptionPlan } from '@/lib/server/subscriptions/plans';
 
 const Body = z.object({
   plan: z.string().refine(isSubscriptionPlan, { message: 'Unknown plan' }),
+  provider: z.enum(['bictorys', 'chariow']).default('bictorys'),
 });
 
 const ORDER_EXPIRY_MS = 24 * 60 * 60 * 1000;
@@ -61,6 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
     const plan = parsed.data.plan;
+    const providerName = parsed.data.provider;
     const catalog = SUBSCRIPTION_PLANS[plan];
 
     // Deterministic same-day dedup key — a user double-clicking "Choisir
@@ -94,11 +101,39 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    let phoneForCharge: string | undefined;
+    if (providerName === 'chariow') {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: auth.user.sub },
+        select: { phone: true },
+      });
+      if (!dbUser?.phone) {
+        return NextResponse.json(
+          {
+            error: 'PHONE_REQUIRED',
+            message: 'Add a phone number in your account settings before paying by card.',
+          },
+          { status: 400, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      phoneForCharge = dbUser.phone;
+    }
+
     let provider;
+    let activeBreaker;
     try {
-      provider = getProvider();
+      if (providerName === 'chariow') {
+        provider = getChariowProvider();
+        activeBreaker = chariowBreaker;
+      } else {
+        provider = getProvider();
+        activeBreaker = breaker;
+      }
     } catch (err) {
-      if (err instanceof PaymentProviderUnconfiguredError) {
+      if (
+        err instanceof PaymentProviderUnconfiguredError ||
+        err instanceof ChariowProviderUnconfiguredError
+      ) {
         return NextResponse.json(
           { error: 'PAYMENT_PROVIDER_UNCONFIGURED', message: 'Payment provider not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
@@ -124,7 +159,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         userId: auth.user.sub,
         amount: catalog.amount,
         currency: 'XOF',
-        provider: 'bictorys',
+        provider: providerName,
         status: 'PENDING',
         expiresAt: new Date(Date.now() + ORDER_EXPIRY_MS),
         idempotencyKey: idemKey,
@@ -134,14 +169,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     try {
-      const result = await breaker.execute(() =>
+      const result = await activeBreaker.execute(() =>
         provider.charge({
           amount: catalog.amount,
           currency: 'XOF',
-          customer: { email: auth.user.email },
+          customer: phoneForCharge
+            ? { email: auth.user.email, phone: phoneForCharge }
+            : { email: auth.user.email },
           successUrl: `${publicUrl}/paiement/succes?o=${order.id}`,
           failureUrl: `${publicUrl}/paiement/echec?o=${order.id}`,
           externalRef: order.id,
+          metadata: { plan },
         }),
       );
 
