@@ -14,6 +14,8 @@ export function PacksModal() {
   const { toast } = useToast();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
+  const [provider, setProvider] = useState<'bictorys' | 'chariow'>('bictorys');
+  const missingPhoneForCard = provider === 'chariow' && !user?.phone;
 
   if (!open) return null;
 
@@ -38,7 +40,7 @@ export function PacksModal() {
     try {
       const res = await api<{ paymentUrl: string }>('/api/subscriptions/checkout', {
         method: 'POST',
-        body: { plan: pk.planId },
+        body: { plan: pk.planId, provider },
       });
       window.location.href = res.paymentUrl;
     } catch (err) {
@@ -80,6 +82,35 @@ export function PacksModal() {
             ✕
           </button>
         </div>
+        <div className="mb-5 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setProvider('bictorys')}
+            className={`im-tap flex-1 cursor-pointer rounded-xl border py-2.5 text-sm font-bold sm:flex-none sm:px-5 ${
+              provider === 'bictorys'
+                ? 'border-brand-green bg-brand-green text-white'
+                : 'border-brand-green/15 bg-white text-brand-slate'
+            }`}
+          >
+            📱 Mobile Money
+          </button>
+          <button
+            type="button"
+            onClick={() => setProvider('chariow')}
+            className={`im-tap flex-1 cursor-pointer rounded-xl border py-2.5 text-sm font-bold sm:flex-none sm:px-5 ${
+              provider === 'chariow'
+                ? 'border-brand-green bg-brand-green text-white'
+                : 'border-brand-green/15 bg-white text-brand-slate'
+            }`}
+          >
+            💳 Carte bancaire
+          </button>
+        </div>
+        {missingPhoneForCard && (
+          <p className="mb-4 rounded-xl border border-brand-red/20 bg-brand-red/5 px-4 py-2.5 text-[13px] font-semibold text-brand-red">
+            Ajoute ton numéro de téléphone dans les paramètres avant de payer par carte.
+          </p>
+        )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PACKS.map((pk) => (
             <div key={pk.name} className={`relative rounded-2xl px-5.5 py-6.5 ${pk.card}`}>
@@ -104,16 +135,22 @@ export function PacksModal() {
               <button
                 type="button"
                 onClick={() => choosePack(pk)}
-                disabled={checkingOut === pk.name}
+                disabled={
+                  checkingOut === pk.name || (pk.action === 'checkout' && missingPhoneForCard)
+                }
                 className={`w-full cursor-pointer rounded-xl py-3 text-sm font-bold disabled:opacity-50 ${pk.button}`}
               >
-                {checkingOut === pk.name ? 'Redirection…' : pk.cta}
+                {checkingOut === pk.name
+                  ? 'Redirection…'
+                  : pk.action === 'checkout' && missingPhoneForCard
+                    ? 'Téléphone requis'
+                    : pk.cta}
               </button>
             </div>
           ))}
         </div>
         <div className="mt-5.5 text-center text-[13px] font-semibold text-brand-muted2">
-          Paiement sécurisé · Wave · Orange Money · Free Money · Stripe · Visa · Mastercard
+          Paiement sécurisé · Wave · Orange Money · Free Money · Carte bancaire
         </div>
       </div>
     </div>
