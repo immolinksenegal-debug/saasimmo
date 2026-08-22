@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { NextRequest } from 'next/server';
 import { chariowFixtureRequest } from '@/test-utils/chariow-mock';
 
 const findUnique = vi.fn();
@@ -108,6 +109,66 @@ describe('POST /api/webhooks/chariow', () => {
     expect(orderUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'FAILED' } }),
     );
+  });
+
+  it('does NOT activate a Subscription when Order.metadata.kind is not pack_subscription', async () => {
+    findUnique.mockResolvedValueOnce(null);
+    orderFindFirst.mockResolvedValueOnce({
+      id: 'o3',
+      userId: 'u3',
+      customerEmail: 'c@d.com',
+      amount: 5000,
+      currency: 'XOF',
+      metadata: { kind: 'listing_boost' }, // not a pack purchase
+    });
+    const { POST } = await import('./route');
+    const { req } = chariowFixtureRequest({ status: 'settled' });
+    await POST(req);
+    // The Order still gets marked PAID — only the Subscription gate is skipped.
+    expect(orderUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'PAID' }) }),
+    );
+    expect(subscriptionUpsert).not.toHaveBeenCalled();
+  });
+
+  it('does NOT activate a Subscription when Order.metadata.plan is not a valid SubscriptionPlan', async () => {
+    findUnique.mockResolvedValueOnce(null);
+    orderFindFirst.mockResolvedValueOnce({
+      id: 'o4',
+      userId: 'u4',
+      customerEmail: 'e@f.com',
+      amount: 5000,
+      currency: 'XOF',
+      metadata: { kind: 'pack_subscription', plan: 'NOT_A_REAL_PLAN' },
+    });
+    const { POST } = await import('./route');
+    const { req } = chariowFixtureRequest({ status: 'settled' });
+    await POST(req);
+    expect(subscriptionUpsert).not.toHaveBeenCalled();
+  });
+
+  it('an "unpaid" sale event dispatches neither onPaid nor onFailed — Order and Subscription untouched', async () => {
+    findUnique.mockResolvedValueOnce(null);
+    // Built directly (not via chariowFixture's typed ChariowFixtureOpts.status,
+    // which only covers 'settled' | 'failed' | 'cancelled') because
+    // mapChariowStatus classifies "unpaid" as PENDING -> ParsedIds.kind
+    // 'other', which createWebhookHandler dispatches to neither onPaid nor
+    // onFailed. This proves that at the route level, not just at the
+    // extractIds-classification level (see lib/server/payments/chariow.test.ts).
+    const secret = 'test-chariow-webhook-secret';
+    const payload = { event: 'unpaid.sale', data: { sale_id: 'sale_test_001', status: 'unpaid' } };
+    const req = new NextRequest(`http://localhost/api/webhooks/chariow?secret=${secret}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: Buffer.from(JSON.stringify(payload)) as unknown as BodyInit,
+    });
+    const { POST } = await import('./route');
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, deduped: false });
+    expect(orderFindFirst).not.toHaveBeenCalled();
+    expect(orderUpdate).not.toHaveBeenCalled();
+    expect(subscriptionUpsert).not.toHaveBeenCalled();
   });
 
   it('exports runtime=nodejs and dynamic=force-dynamic', async () => {
