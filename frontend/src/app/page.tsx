@@ -3,9 +3,10 @@ import Image from 'next/image';
 import { HomeSearchPanel } from '@/components/immolink/HomeSearchPanel';
 import { PropertyCard } from '@/components/immolink/PropertyCard';
 import { Reveal } from '@/components/immolink/Reveal';
-import { HERO_STATS, PACKS, TESTIMONIALS, formatFcfa } from '@/lib/mock/immolink';
+import { HERO_STATS, PACKS, TESTIMONIALS, formatFcfa, txnTextClass } from '@/lib/mock/immolink';
 import { listProperties } from '@/lib/server/properties';
 import { listInvestmentProjects } from '@/lib/server/investment-projects';
+import { listPropertyRequests } from '@/lib/server/property-requests';
 import { getActiveBanner } from '@/lib/server/banners';
 
 export const runtime = 'nodejs';
@@ -14,10 +15,11 @@ export const runtime = 'nodejs';
 export const revalidate = 60;
 
 export default async function Home() {
-  const [all, banner, programs] = await Promise.all([
+  const [all, banner, programs, requests] = await Promise.all([
     listProperties({ take: 24 }),
     getActiveBanner(),
     listInvestmentProjects({ take: 3 }),
+    listPropertyRequests({ take: 3 }),
   ]);
   const featured = all.filter((p) => ['Premium', 'Coup de cœur'].includes(p.badge)).slice(0, 3);
   const recent = all.slice(0, 6);
@@ -196,6 +198,52 @@ export default async function Home() {
           </div>
         </section>
       </Reveal>
+
+      {/* DEMANDES DE RECHERCHE */}
+      {requests.length > 0 && (
+        <Reveal>
+          <section className="mx-auto max-w-6xl px-4 pt-15 pb-2 sm:px-8">
+            <div className="mb-6.5 flex items-end justify-between">
+              <div>
+                <div className="mb-2 text-[13px] font-bold tracking-wide text-brand-red uppercase">
+                  Particuliers
+                </div>
+                <h2 className="font-serif text-4xl leading-none font-normal">
+                  Demandes de recherche
+                </h2>
+              </div>
+              <Link
+                href="/demandes"
+                className="im-tap border-b-2 border-brand-red pb-1 text-sm font-bold text-brand-green"
+              >
+                Voir tout →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-5.5 sm:grid-cols-2 lg:grid-cols-3">
+              {requests.map((r) => (
+                <Link
+                  key={r.id}
+                  href="/demandes"
+                  className="im-tap flex flex-col gap-3 rounded-2xl border border-brand-green/8 bg-white p-5"
+                >
+                  <span className={`text-[13px] font-bold ${txnTextClass(r.txn)}`}>
+                    {r.txn === 'Vente' ? 'Recherche à acheter' : 'Recherche à louer'} · {r.type}
+                  </span>
+                  <div className="text-[15.5px] font-extrabold text-brand-ink">
+                    📍 {r.quartier ? `${r.quartier}, ` : ''}
+                    {r.city}
+                  </div>
+                  <div className="text-[14px] font-semibold text-brand-muted2">
+                    Budget max : {formatFcfa(r.budgetMax)} FCFA
+                    {r.txn === 'Location' ? '/mois' : ''}
+                    {r.bedsMin > 0 ? ` · ${r.bedsMin}+ chambres` : ''}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </Reveal>
+      )}
 
       {/* TEMOIGNAGES */}
       <Reveal>
